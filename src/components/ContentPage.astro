@@ -1,0 +1,89 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from './Icon.astro';
+import FaqList from './FaqList.astro';
+import FinalCta from './FinalCta.astro';
+import { SITE, TEL_HREF, waHref, localePath, type Lang } from '../data/site';
+import { UI } from '../data/ui';
+import type { Section, FAQ } from '../data/types';
+
+interface Props {
+  lang: Lang;
+  path: string;
+  title: string;
+  description: string;
+  h1: string;
+  lead: string;
+  sections: Section[];
+  faqs?: FAQ[];
+  note?: string;
+  cta?: boolean;
+  schemaType?: string;
+}
+const { lang, path, title, description, h1, lead, sections, faqs = [], note, cta = true } = Astro.props;
+const t = UI[lang];
+const site = Astro.site!;
+const schema: Record<string, unknown>[] = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: t.breadcrumbHome, item: new URL(localePath(lang, '/'), site).href },
+      { '@type': 'ListItem', position: 2, name: h1, item: new URL(localePath(lang, path), site).href },
+    ],
+  },
+];
+if (faqs.length) {
+  schema.push({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    inLanguage: lang === 'ar' ? 'ar-SA' : 'en-SA',
+    mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  });
+}
+---
+<Base lang={lang} path={path} title={title} description={description} schema={schema}>
+  <section class="page-hero">
+    <div class="container">
+      <div class="page-hero__in">
+        <nav aria-label={lang === 'ar' ? 'مسار التنقل' : 'Breadcrumb'}>
+          <ol class="crumbs">
+            <li><a href={localePath(lang, '/')}>{t.breadcrumbHome}</a></li>
+            <li><span aria-current="page">{h1}</span></li>
+          </ol>
+        </nav>
+        <h1>{h1}</h1>
+        <p class="page-hero__lead">{lead}</p>
+        {cta && (
+          <div class="btn-row">
+            <a class="btn btn--yellow" href={TEL_HREF} data-track="content-hero"><Icon name="phone" size={20} />{t.how.call} <span class="ltr-num">{SITE.phoneDisplay}</span></a>
+            <a class="btn btn--wa" href={waHref(t.waDefault)} target="_blank" rel="noopener" data-track="content-hero"><Icon name="whatsapp-logo" size={20} />{t.how.wa}</a>
+          </div>
+        )}
+      </div>
+    </div>
+  </section>
+  <section class="legal">
+    <div class="container">
+      <article class="prose">
+        {sections.map((s) => (
+          <section>
+            <h2>{s.h}</h2>
+            {s.p?.map((p) => <p>{p}</p>)}
+            {s.list && <ul>{s.list.map((li) => <li>{li}</li>)}</ul>}
+          </section>
+        ))}
+        {note && <p><small>{note}</small></p>}
+      </article>
+    </div>
+  </section>
+  {faqs.length > 0 && (
+    <section class="page-faq">
+      <div class="container">
+        <h2 class="section-title">{lang === 'ar' ? 'أسئلة شائعة عن الأسعار' : 'Pricing questions'}</h2>
+        <FaqList items={faqs} />
+      </div>
+    </section>
+  )}
+  {cta && <FinalCta lang={lang} />}
+</Base>

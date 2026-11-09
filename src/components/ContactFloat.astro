@@ -1,0 +1,16 @@
+---
+import Icon from './Icon.astro';
+import { TEL_HREF, waHref, type Lang } from '../data/site';
+import { UI } from '../data/ui';
+interface Props { lang: Lang; wa?: string }
+const { lang, wa } = Astro.props;
+const t = UI[lang];
+const href = waHref(wa ?? t.waDefault);
+---
+<a class="float-wa" href={href} target="_blank" rel="noopener" aria-label={t.floatingWa} data-track="floating">
+  <Icon name="whatsapp-logo" size={32} />
+</a>
+<div class="sticky-bar">
+  <a class="btn btn--yellow" href={TEL_HREF} data-track="sticky"><Icon name="phone" size={20} />{t.sticky.call}</a>
+  <a class="btn btn--wa" href={href} target="_blank" rel="noopener" data-track="sticky"><Icon name="whatsapp-logo" size={20} />{t.sticky.wa}</a>
+</div>

@@ -1,0 +1,134 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Icon from './Icon.astro';
+import FinalCta from './FinalCta.astro';
+import heroEn from '../assets/img/hero-flatbed-riyadh-night.jpg';
+import featureImg from '../assets/img/hydraulic-flatbed-loading-sports-car.jpg';
+import riyadhImg from '../assets/img/riyadh-night-aerial.jpg';
+import { SITE, TEL_HREF, waHref, localePath, type Lang } from '../data/site';
+import { UI } from '../data/ui';
+import { MORE_DISTRICTS } from '../data/areas';
+import { COLLECTIONS, SECTION_LABEL, type Section } from '../lib/landing';
+
+interface Props { section: Section; lang: Lang }
+const { section, lang } = Astro.props;
+const t = UI[lang];
+const items = COLLECTIONS[section];
+const path = `/${section}/`;
+const site = Astro.site!;
+
+const COPY: Record<Section, Record<Lang, { title: string; description: string; h1: string; lead: string }>> = {
+  services: {
+    en: {
+      title: 'Towing Services in Riyadh 24/7 | Satha Hydraulic Flatbed',
+      description: 'All our towing services in Riyadh: hydraulic flatbed towing, accident recovery, breakdown towing, roadside help, luxury car transport and city-to-city car transport.',
+      h1: 'Towing services in Riyadh',
+      lead: 'One number for every kind of tow. Every service runs 24/7 on hydraulic flatbeds, with the price agreed on the phone before we move.',
+    },
+    ar: {
+      title: 'خدمات سطحة الرياض 24 ساعة | سحب ونقل السيارات',
+      description: 'جميع خدماتنا في الرياض: سطحة هيدروليك، نقل سيارات الحوادث، سحب السيارات المعطلة، مساعدة على الطريق، نقل السيارات الفاخرة، ونقل السيارات بين المدن.',
+      h1: 'خدمات السطحة في الرياض',
+      lead: 'رقم واحد لكل أنواع السحب. جميع الخدمات متاحة 24 ساعة بسطحات هيدروليك، مع سعر متفق عليه هاتفياً قبل أن نتحرك.',
+    },
+  },
+  routes: {
+    en: {
+      title: 'Car Transport from Riyadh to All Saudi Cities | Satha',
+      description: 'Daily car transport from Riyadh to Jeddah, Dammam, Makkah, Madinah, Qassim, Abha, Hail and every region on a hydraulic flatbed. Door-to-door and insured.',
+      h1: 'Car transport from Riyadh to every Saudi city',
+      lead: 'We run daily trips from Riyadh to every region of the Kingdom. Your car rides on a hydraulic flatbed, strapped at all four wheels, and is delivered door-to-door.',
+    },
+    ar: {
+      title: 'نقل سيارات من الرياض لجميع مدن المملكة | سطحة',
+      description: 'رحلات يومية لنقل وشحن السيارات من الرياض إلى جدة والدمام ومكة والمدينة والقصيم وأبها وحائل وجميع المناطق بسطحة هيدروليك. من الباب إلى الباب ومؤمَّن.',
+      h1: 'نقل السيارات من الرياض إلى جميع مدن المملكة',
+      lead: 'لدينا رحلات يومية من الرياض إلى جميع مناطق المملكة. تُنقل سيارتك على سطحة هيدروليك مثبتة من العجلات الأربع، وتُسلَّم من الباب إلى الباب.',
+    },
+  },
+  areas: {
+    en: {
+      title: 'Tow Truck in Every Riyadh District 24/7 | Satha',
+      description: 'Hydraulic flatbed towing in all Riyadh districts: North Riyadh, Al Olaya, Al Malaz, Al Naseem, Al Yasmin, Al Sulay, Diriyah, Al Kharj and more. Avg. 30 min arrival.',
+      h1: 'Tow truck in every Riyadh district',
+      lead: 'Our trucks are parked across north, central and south Riyadh around the clock, so the nearest one is never far away. Average arrival inside Riyadh is about 30 minutes.',
+    },
+    ar: {
+      title: 'سطحة في جميع أحياء الرياض 24 ساعة | سطحة هيدروليك',
+      description: 'سطحة هيدروليك في جميع أحياء الرياض: شمال الرياض، العليا، الملز، النسيم، الياسمين، السلي، الدرعية، الخرج وغيرها. متوسط الوصول 30 دقيقة.',
+      h1: 'سطحة في جميع أحياء الرياض',
+      lead: 'سطحاتنا متمركزة في شمال ووسط وجنوب الرياض على مدار الساعة، لذلك أقرب سطحة ليست بعيدة عنك أبداً. متوسط الوصول داخل الرياض نحو 30 دقيقة.',
+    },
+  },
+};
+const c = COPY[section][lang];
+const image = section === 'services' ? featureImg : section === 'routes' ? heroEn : riyadhImg;
+const moreTitle = lang === 'ar' ? 'نخدم أيضاً هذه الأحياء والمناطق' : 'We also cover these districts and areas';
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: t.breadcrumbHome, item: new URL(localePath(lang, '/'), site).href },
+      { '@type': 'ListItem', position: 2, name: SECTION_LABEL[section][lang], item: new URL(localePath(lang, path), site).href },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: items.map((p, i) => ({
+      '@type': 'ListItem', position: i + 1, name: p[lang].name, url: new URL(localePath(lang, `/${section}/${p.slug}/`), site).href,
+    })),
+  },
+];
+---
+<Base lang={lang} path={path} title={c.title} description={c.description} schema={schema}>
+  <section class="page-hero">
+    <Image class="page-hero__img" src={image} alt="" widths={[768, 1408]} sizes="100vw" format="webp" quality={60} loading="eager" fetchpriority="high" />
+    <div class="container">
+      <div class="page-hero__in">
+        <nav aria-label={lang === 'ar' ? 'مسار التنقل' : 'Breadcrumb'}>
+          <ol class="crumbs">
+            <li><a href={localePath(lang, '/')}>{t.breadcrumbHome}</a></li>
+            <li><span aria-current="page">{SECTION_LABEL[section][lang]}</span></li>
+          </ol>
+        </nav>
+        <h1>{c.h1}</h1>
+        <p class="page-hero__lead">{c.lead}</p>
+        <div class="btn-row">
+          <a class="btn btn--yellow" href={TEL_HREF} data-track={`${section}-hub`}><Icon name="phone" size={20} />{t.how.call} <span class="ltr-num">{SITE.phoneDisplay}</span></a>
+          <a class="btn btn--wa" href={waHref(t.waDefault)} target="_blank" rel="noopener" data-track={`${section}-hub`}><Icon name="whatsapp-logo" size={20} />{t.how.wa}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="related">
+    <div class="container">
+      <h2 class="sr-only">{SECTION_LABEL[section][lang]}</h2>
+      <div class="link-grid">
+        {items.map((p) => (
+          <a class="link-card" href={localePath(lang, `/${section}/${p.slug}/`)}>
+            <span class="icon-box"><Icon name={p.icon} size={22} /></span>
+            <span>
+              <span class="link-card__t">{p[lang].name}</span>
+              <span class="link-card__d">{p[lang].short}</span>
+            </span>
+          </a>
+        ))}
+      </div>
+      {section === 'areas' && (
+        <div class="hub-more">
+          <h2 class="routes__title">{moreTitle}</h2>
+          <ul class="hub-list">
+            {MORE_DISTRICTS[lang].map((d) => <li class="chip">{d}</li>)}
+          </ul>
+        </div>
+      )}
+    </div>
+  </section>
+
+  <FinalCta lang={lang} preset={section === 'routes' ? 'city' : 'breakdown'} />
+</Base>

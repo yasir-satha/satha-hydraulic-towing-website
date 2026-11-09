@@ -1,0 +1,25 @@
+---
+import Icon from './Icon.astro';
+import QuoteCard from './QuoteCard.astro';
+import { SITE, TEL_HREF, waHref, type Lang } from '../data/site';
+import { UI } from '../data/ui';
+interface Props { lang: Lang; preset?: string; wa?: string }
+const { lang, preset, wa } = Astro.props;
+const t = UI[lang].cta;
+---
+<section class="final" aria-labelledby="final-title">
+  <div class="container final__in">
+    <div class="final__content">
+      <p class="final__badge"><span class="dot dot--pulse"></span>{t.badge}</p>
+      <h2 class="final__title" id="final-title"><span>{t.title[0]}</span><span>{t.title[1]}</span></h2>
+      <p class="final__desc final__desc--long">{t.desc}</p>
+      <p class="final__desc final__desc--short">{t.descShort}</p>
+      <a class="final__num ltr-num" href={TEL_HREF} data-track="final-number">{SITE.phoneDisplay}</a>
+      <div class="btn-row">
+        <a class="btn btn--ink btn--lg" href={TEL_HREF} data-track="final"><Icon name="phone" size={20} />{t.call}</a>
+        <a class="btn btn--wa btn--lg" href={waHref(wa ?? UI[lang].waDefault)} target="_blank" rel="noopener" data-track="final"><Icon name="whatsapp-logo" size={20} />{t.wa}</a>
+      </div>
+    </div>
+    <QuoteCard lang={lang} preset={preset} />
+  </div>
+</section>

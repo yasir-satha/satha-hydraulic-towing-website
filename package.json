@@ -1,0 +1,32 @@
+{
+  "name": "satha-towing",
+  "type": "module",
+  "version": "1.0.0",
+  "private": true,
+  "engines": {
+    "node": ">=22.23.4"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/sitemap": "^3.7.4",
+    "@fontsource-variable/archivo": "^5.3.0",
+    "@fontsource-variable/cairo": "^5.3.0",
+    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource/barlow-condensed": "^5.3.0",
+    "@fontsource/reem-kufi": "^5.3.0",
+    "astro": "^7.4.7"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.12",
+    "@phosphor-icons/core": "^2.1.1",
+    "simple-icons": "^16.37.0",
+    "svg-path-bounds": "^1.0.2",
+    "typescript": "^6.0.3"
+  }
+}

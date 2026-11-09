@@ -1,0 +1,98 @@
+---
+import Icon from './Icon.astro';
+import { SITE, TEL_HREF, type Lang } from '../data/site';
+import { UI } from '../data/ui';
+interface Props { lang: Lang; preset?: string }
+const { lang, preset = 'breakdown' } = Astro.props;
+const q = UI[lang].quote;
+const i18n = {
+  intro: q.msgIntro, problem: q.msgProblem, pickup: q.msgPickup, dropoff: q.msgDropoff, map: q.msgMap,
+  locating: q.locating, located: q.located, locError: q.locError,
+};
+const uid = `q-${lang}`;
+---
+<form class="quote" data-quote data-wa={SITE.whatsappNumber} data-i18n={JSON.stringify(i18n)} novalidate>
+  <div>
+    <h2 class="quote__title">{q.title}</h2>
+    <p class="quote__sub">{q.sub}</p>
+  </div>
+  <fieldset>
+    <legend>{q.group}</legend>
+    <div class="qchips">
+      {q.chips.map((c) => (
+        <label class="qchip">
+          <input type="radio" name="problem" value={c.l} checked={c.id === preset} />
+          <span><Icon name={c.icon} size={18} />{c.l}</span>
+        </label>
+      ))}
+    </div>
+  </fieldset>
+  <div class="qfields">
+    <div class="qfield">
+      <Icon name="map-pin" size={18} />
+      <div class="qfield__txt">
+        <label for={`${uid}-pickup`}>{q.pickup}</label>
+        <input id={`${uid}-pickup`} name="pickup" type="text" autocomplete="street-address" placeholder={q.pickupPh} />
+        <span class="qstatus" aria-live="polite"></span>
+      </div>
+      <button class="qlocate" type="button" aria-label={q.locate} title={q.locate}><Icon name="crosshair" size={18} /></button>
+      <input type="hidden" name="map" value="" />
+    </div>
+    <div class="qfield">
+      <Icon name="flag-checkered" size={18} />
+      <div class="qfield__txt">
+        <label for={`${uid}-dropoff`}>{q.dropoff}</label>
+        <input id={`${uid}-dropoff`} name="dropoff" type="text" placeholder={q.dropoffPh} />
+      </div>
+    </div>
+  </div>
+  <button class="btn btn--wa" type="submit"><Icon name="whatsapp-logo" size={20} />{q.send}</button>
+  <p class="quote__foot">{q.prefer} <a href={TEL_HREF} data-track="quote-card">{q.callLink} <span class="ltr-num">{SITE.phoneDisplay}</span></a></p>
+</form>
+
+<script>
+  type I18n = Record<string, string>;
+  document.querySelectorAll<HTMLFormElement>('form[data-quote]').forEach((form) => {
+    const t: I18n = JSON.parse(form.dataset.i18n || '{}');
+    const pickup = form.elements.namedItem('pickup') as HTMLInputElement;
+    const map = form.elements.namedItem('map') as HTMLInputElement;
+    const status = form.querySelector<HTMLElement>('.qstatus')!;
+    const locBtn = form.querySelector<HTMLButtonElement>('.qlocate')!;
+
+    const locate = () => {
+      if (!('geolocation' in navigator)) { status.textContent = t.locError; return; }
+      status.textContent = t.locating;
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          const { latitude, longitude } = pos.coords;
+          map.value = `https://maps.google.com/?q=${latitude.toFixed(6)},${longitude.toFixed(6)}`;
+          status.textContent = t.located;
+          locBtn.classList.add('is-done');
+        },
+        () => { status.textContent = t.locError; pickup.focus(); },
+        { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 },
+      );
+    };
+    locBtn.addEventListener('click', locate);
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const fd = new FormData(form);
+      const lines = [t.intro];
+      const problem = String(fd.get('problem') || '');
+      const pu = String(fd.get('pickup') || '').trim();
+      const dr = String(fd.get('dropoff') || '').trim();
+      const mp = String(fd.get('map') || '');
+      if (problem) lines.push(`${t.problem}: ${problem}`);
+      if (pu) lines.push(`${t.pickup}: ${pu}`);
+      if (mp) lines.push(`${t.map}: ${mp}`);
+      if (dr) lines.push(`${t.dropoff}: ${dr}`);
+      const url = `https://wa.me/${form.dataset.wa}?text=${encodeURIComponent(lines.join('\n'))}`;
+      (window as any).sathaTrack?.('form', 'quote-card');
+      // window.open returns null when 'noopener' is passed, so clear opener manually.
+      const win = window.open(url, '_blank');
+      if (win) win.opener = null;
+      else window.location.href = url;
+    });
+  });
+</script>

@@ -1,0 +1,20 @@
+---
+import Base from '../layouts/Base.astro';
+import Icon from '../components/Icon.astro';
+import { SITE, TEL_HREF, waHref } from '../data/site';
+---
+<Base lang="en" path="/404/" title="Page not found | Satha" description={`This page doesn't exist. Call Satha on ${SITE.phoneDisplay} for 24/7 towing in Riyadh.`} noindex alternates={false}>
+  <section class="notfound">
+    <div>
+      <h1>Page not found</h1>
+      <p lang="ar" dir="rtl">الصفحة غير موجودة</p>
+      <p>Need a tow? We answer 24/7.</p>
+      <div class="btn-row">
+        <a class="btn btn--yellow" href={TEL_HREF} data-track="404"><Icon name="phone" size={20} /><span class="ltr-num">{SITE.phoneDisplay}</span></a>
+        <a class="btn btn--wa" href={waHref()} target="_blank" rel="noopener" data-track="404"><Icon name="whatsapp-logo" size={20} />WhatsApp</a>
+        <a class="btn btn--dark" href="/">Home</a>
+        <a class="btn btn--dark" href="/ar/" lang="ar">الرئيسية</a>
+      </div>
+    </div>
+  </section>
+</Base>

@@ -1,0 +1,6 @@
+---
+import ContentPage from '../../components/ContentPage.astro';
+import { PRICES } from '../../data/pages';
+const c = PRICES.en;
+---
+<ContentPage lang="en" path="/prices/" cta={true} {...c} />

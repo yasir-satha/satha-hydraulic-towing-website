@@ -1,0 +1,157 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+import Base from '../layouts/Base.astro';
+import Icon from './Icon.astro';
+import FaqList from './FaqList.astro';
+import FinalCta from './FinalCta.astro';
+import { SITE, TEL_HREF, waHref, localePath, type Lang } from '../data/site';
+import { UI } from '../data/ui';
+import type { LandingPage } from '../data/types';
+
+interface RelatedLink { href: string; title: string; desc: string; icon: string }
+interface Props {
+  lang: Lang;
+  page: LandingPage;
+  /** URL segment: services | routes | areas */
+  section: 'services' | 'routes' | 'areas';
+  sectionLabel: string;
+  image: ImageMetadata;
+  imageAlt: string;
+  related: RelatedLink[];
+  /** Which quote-card chip is pre-selected */
+  preset?: string;
+  serviceType: string;
+}
+
+const { lang, page, section, sectionLabel, image, imageAlt, related, preset, serviceType } = Astro.props;
+const c = page[lang];
+const t = UI[lang];
+const path = `/${section}/${page.slug}/`;
+const site = Astro.site!;
+const abs = (p: string) => new URL(localePath(lang, p), site).href;
+
+const crumbs = [
+  { name: t.breadcrumbHome, href: '/' },
+  { name: sectionLabel, href: `/${section}/` },
+  { name: c.name, href: path },
+];
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((b, i) => ({ '@type': 'ListItem', position: i + 1, name: b.name, item: abs(b.href) })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: c.h1,
+    serviceType,
+    description: c.description,
+    url: abs(path),
+    inLanguage: lang === 'ar' ? 'ar-SA' : 'en-SA',
+    provider: { '@id': new URL('/#business', site).href },
+    areaServed: section === 'areas'
+      ? { '@type': 'Place', name: `${page.en.name}, Riyadh` }
+      : section === 'routes'
+        ? [{ '@type': 'City', name: 'Riyadh' }, { '@type': 'City', name: page.en.name.replace('Riyadh → ', '') }]
+        : { '@type': 'City', name: 'Riyadh' },
+    availableChannel: {
+      '@type': 'ServiceChannel',
+      servicePhone: { '@type': 'ContactPoint', telephone: SITE.phoneE164 },
+    },
+    hoursAvailable: {
+      '@type': 'OpeningHoursSpecification',
+      dayOfWeek: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      opens: '00:00',
+      closes: '23:59',
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    inLanguage: lang === 'ar' ? 'ar-SA' : 'en-SA',
+    mainEntity: c.faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+const faqTitle = lang === 'ar' ? 'أسئلة شائعة' : 'Frequently asked questions';
+const asideTitle = lang === 'ar' ? 'تحتاج سطحة الآن؟' : 'Need a tow right now?';
+const asideDesc = lang === 'ar' ? 'يرد عليك شخص حقيقي على مدار 24 ساعة. سعر واضح قبل أن نتحرك.' : 'A real person answers 24 hours a day. Clear price before we move.';
+---
+<Base lang={lang} path={path} title={c.title} description={c.description} schema={schema} wa={c.wa}>
+  <section class="page-hero">
+    <Image class="page-hero__img" src={image} alt="" widths={[768, 1408]} sizes="100vw" format="webp" quality={60} loading="eager" fetchpriority="high" />
+    <div class="container">
+      <div class="page-hero__in">
+        <nav aria-label={lang === 'ar' ? 'مسار التنقل' : 'Breadcrumb'}>
+          <ol class="crumbs">
+            {crumbs.map((b, i) => (
+              <li>{i < crumbs.length - 1 ? <a href={localePath(lang, b.href)}>{b.name}</a> : <span aria-current="page">{b.name}</span>}</li>
+            ))}
+          </ol>
+        </nav>
+        <h1>{c.h1}</h1>
+        <p class="page-hero__lead">{c.lead}</p>
+        <div class="btn-row">
+          <a class="btn btn--yellow" href={TEL_HREF} data-track={`${section}-hero`}><Icon name="phone" size={20} />{t.how.call} <span class="ltr-num">{SITE.phoneDisplay}</span></a>
+          <a class="btn btn--wa" href={waHref(c.wa)} target="_blank" rel="noopener" data-track={`${section}-hero`}><Icon name="whatsapp-logo" size={20} />{t.how.wa}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page-body">
+    <div class="container page-body__in">
+      <article class="prose">
+        {c.sections.map((s) => (
+          <section>
+            <h2>{s.h}</h2>
+            {s.p?.map((p) => <p>{p}</p>)}
+            {s.list && <ul>{s.list.map((li) => <li>{li}</li>)}</ul>}
+          </section>
+        ))}
+        <figure>
+          <Image src={image} alt={imageAlt} widths={[480, 800, 1200]} sizes="(max-width: 1023px) 100vw, 800px" format="webp" quality={70} loading="lazy" class="prose-img" />
+        </figure>
+      </article>
+      <aside class="aside">
+        <div class="aside-card">
+          <p class="aside-card__badge"><span class="dot dot--pulse"></span>{t.cta.badge}</p>
+          <p class="aside-card__t">{asideTitle}</p>
+          <p class="aside-card__d">{asideDesc}</p>
+          <a class="btn btn--yellow" href={TEL_HREF} data-track={`${section}-aside`}><Icon name="phone" size={20} /><span class="ltr-num">{SITE.phoneDisplay}</span></a>
+          <a class="btn btn--wa" href={waHref(c.wa)} target="_blank" rel="noopener" data-track={`${section}-aside`}><Icon name="whatsapp-logo" size={20} />{t.nav.whatsapp}</a>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="page-faq" aria-labelledby="page-faq-title">
+    <div class="container">
+      <h2 class="section-title" id="page-faq-title">{faqTitle}</h2>
+      <FaqList items={c.faqs} />
+    </div>
+  </section>
+
+  {related.length > 0 && (
+    <section class="related" aria-labelledby="related-title">
+      <div class="container">
+        <h2 class="section-title" id="related-title">{t.related}</h2>
+        <div class="link-grid">
+          {related.map((r) => (
+            <a class="link-card" href={r.href}>
+              <span class="icon-box"><Icon name={r.icon} size={22} /></span>
+              <span>
+                <span class="link-card__t">{r.title}</span>
+                <span class="link-card__d">{r.desc}</span>
+              </span>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <FinalCta lang={lang} preset={preset} wa={c.wa} />
+</Base>

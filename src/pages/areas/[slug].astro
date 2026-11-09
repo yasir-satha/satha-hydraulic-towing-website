@@ -1,0 +1,10 @@
+---
+import LandingTemplate from '../../components/LandingTemplate.astro';
+import { COLLECTIONS, getLandingProps } from '../../lib/landing';
+
+export function getStaticPaths() {
+  return COLLECTIONS.areas.map((page) => ({ params: { slug: page.slug }, props: { page } }));
+}
+const { page } = Astro.props;
+---
+<LandingTemplate {...getLandingProps('areas', page, 'en')} />

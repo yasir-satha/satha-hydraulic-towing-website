@@ -1,0 +1,20 @@
+---
+import Icon from './Icon.astro';
+import type { FAQ } from '../data/types';
+interface Props { items: FAQ[]; openFirst?: boolean; headingLevel?: 'h3' | 'h2' }
+const { items, openFirst = true } = Astro.props;
+---
+<div class="faq__list">
+  {items.map((f, i) => (
+    <details class="faq-item" open={openFirst && i === 0}>
+      <summary>
+        <span>{f.q}</span>
+        <span class="faq-item__toggle" aria-hidden="true">
+          <Icon name="plus" size={16} class="i-plus" />
+          <Icon name="minus" size={16} class="i-minus" />
+        </span>
+      </summary>
+      <p class="faq-item__a">{f.a}</p>
+    </details>
+  ))}
+</div>

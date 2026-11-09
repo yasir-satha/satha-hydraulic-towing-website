@@ -1,0 +1,84 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { SITE, TEL_HREF, waHref, localePath, otherLang, type Lang } from '../data/site';
+import { UI } from '../data/ui';
+
+interface Props { lang: Lang; path: string }
+const { lang, path } = Astro.props;
+const t = UI[lang];
+const home = localePath(lang, '/');
+const alt = otherLang(lang);
+const altHref = localePath(alt, path);
+const links = [
+  { href: `${home}#services`, label: t.nav.services },
+  { href: `${home}#how-it-works`, label: t.nav.how },
+  { href: `${home}#coverage`, label: t.nav.coverage },
+  { href: `${home}#faq`, label: t.nav.faq },
+];
+const mobileExtra = [
+  { href: localePath(lang, '/prices/'), label: t.nav.prices },
+  { href: localePath(lang, '/areas/'), label: t.nav.areas },
+  { href: localePath(lang, '/routes/'), label: t.nav.routes },
+];
+---
+<div class="topbar">
+  <div class="container topbar__in">
+    <div class="topbar__group">
+      <span class="topbar__item"><Icon name="map-pin" size={14} />{t.topbar.location}</span>
+      <span class="topbar__item"><Icon name="clock" size={14} />{t.topbar.hours}</span>
+    </div>
+  </div>
+</div>
+<header class="header">
+  <div class="container header__in">
+    <Logo href={home} label={SITE.name[lang]} size="md" />
+    <nav class="nav-links" aria-label={lang === 'ar' ? 'القائمة الرئيسية' : 'Main'}>
+      {links.map((l) => <a href={l.href}>{l.label}</a>)}
+    </nav>
+    <div class="nav-actions">
+      <a class="lang-switch" href={altHref} hreflang={alt} lang={alt}>
+        <Icon name="globe" size={16} />
+        <span class="ls-long">{t.nav.langLabel}</span><span class="ls-short">{t.nav.langShort}</span>
+      </a>
+      <a class="btn btn--wa btn--sm" href={waHref(t.waDefault)} target="_blank" rel="noopener" data-track="nav">
+        <Icon name="whatsapp-logo" size={18} />{t.nav.whatsapp}
+      </a>
+      <a class="btn btn--yellow btn--sm" href={TEL_HREF} data-track="nav">
+        <Icon name="phone" size={18} /><span class="ltr-num">{SITE.phoneDisplay}</span>
+      </a>
+      <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label={t.nav.menu} data-close-label={t.nav.close} data-open-label={t.nav.menu}>
+        <Icon name="list" size={20} class="i-open" />
+        <Icon name="x" size={20} class="i-close" />
+      </button>
+    </div>
+  </div>
+  <nav id="mobile-nav" class="mobile-nav" aria-label={t.nav.menu}>
+    {[...links, ...mobileExtra].map((l) => <a href={l.href}>{l.label}</a>)}
+  </nav>
+</header>
+
+<style>
+  .menu-btn .i-close { display: none; }
+  .menu-btn[aria-expanded='true'] .i-open { display: none; }
+  .menu-btn[aria-expanded='true'] .i-close { display: block; }
+</style>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.menu-btn');
+  const nav = document.getElementById('mobile-nav');
+  if (btn && nav) {
+    const set = (open: boolean) => {
+      btn.setAttribute('aria-expanded', String(open));
+      btn.setAttribute('aria-label', (open ? btn.dataset.closeLabel : btn.dataset.openLabel) || '');
+      nav.classList.toggle('is-open', open);
+    };
+    btn.addEventListener('click', () => set(btn.getAttribute('aria-expanded') !== 'true'));
+    nav.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).closest('a')) set(false);
+    });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && nav.classList.contains('is-open')) { set(false); btn.focus(); }
+    });
+  }
+</script>

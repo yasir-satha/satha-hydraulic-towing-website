@@ -1,0 +1,109 @@
+---
+/**
+ * Google Analytics 4, Google Ads, Meta Pixel and TikTok Pixel.
+ * Every tag is optional: set its ID as an environment variable (see .env.example)
+ * and it switches on. Nothing loads when no IDs are set.
+ *
+ * Tags load right after the page becomes idle (or on the first interaction),
+ * so they don't slow down the first paint. Clicks on phone and WhatsApp links
+ * and quote-form submits are tracked as conversions on every platform.
+ */
+const cfg = {
+  ga: import.meta.env.PUBLIC_GA4_ID || '',
+  ads: import.meta.env.PUBLIC_GOOGLE_ADS_ID || '',
+  adsCall: import.meta.env.PUBLIC_GOOGLE_ADS_CALL_LABEL || '',
+  adsWa: import.meta.env.PUBLIC_GOOGLE_ADS_WHATSAPP_LABEL || '',
+  adsForm: import.meta.env.PUBLIC_GOOGLE_ADS_FORM_LABEL || '',
+  meta: import.meta.env.PUBLIC_META_PIXEL_ID || '',
+  tt: import.meta.env.PUBLIC_TIKTOK_PIXEL_ID || '',
+};
+const enabled = Boolean(cfg.ga || cfg.ads || cfg.meta || cfg.tt);
+---
+{enabled && (
+  <script is:inline define:vars={{ cfg }}>
+    (function () {
+      var C = cfg;
+      var loaded = false;
+
+      function load() {
+        if (loaded) return;
+        loaded = true;
+
+        // Google tag (GA4 + Google Ads share one gtag.js)
+        if (C.ga || C.ads) {
+          window.dataLayer = window.dataLayer || [];
+          window.gtag = function () { window.dataLayer.push(arguments); };
+          window.gtag('js', new Date());
+          if (C.ga) window.gtag('config', C.ga);
+          if (C.ads) window.gtag('config', C.ads);
+          var g = document.createElement('script');
+          g.async = true;
+          g.src = 'https://www.googletagmanager.com/gtag/js?id=' + encodeURIComponent(C.ga || C.ads);
+          document.head.appendChild(g);
+        }
+
+        // Meta Pixel (official base code)
+        if (C.meta) {
+          !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+          n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+          if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+          n.queue=[];t=b.createElement(e);t.async=!0;
+          t.src=v;s=b.getElementsByTagName(e)[0];
+          s.parentNode.insertBefore(t,s)}(window, document,'script',
+          'https://connect.facebook.net/en_US/fbevents.js');
+          window.fbq('init', C.meta);
+          window.fbq('track', 'PageView');
+        }
+
+        // TikTok Pixel (official base code)
+        if (C.tt) {
+          !function (w, d, t) {
+            w.TiktokAnalyticsObject=t;var ttq=w[t]=w[t]||[];ttq.methods=["page","track","identify","instances","debug","on","off","once","ready","alias","group","enableCookie","disableCookie","holdConsent","revokeConsent","grantConsent"],ttq.setAndDefer=function(t,e){t[e]=function(){t.push([e].concat(Array.prototype.slice.call(arguments,0)))}};for(var i=0;i<ttq.methods.length;i++)ttq.setAndDefer(ttq,ttq.methods[i]);ttq.instance=function(t){for(var e=ttq._i[t]||[],n=0;n<ttq.methods.length;n++)ttq.setAndDefer(e,ttq.methods[n]);return e},ttq.load=function(e,n){var r="https://analytics.tiktok.com/i18n/pixel/events.js",o=n&&n.partner;ttq._i=ttq._i||{},ttq._i[e]=[],ttq._i[e]._u=r,ttq._t=ttq._t||{},ttq._t[e]=+new Date,ttq._o=ttq._o||{},ttq._o[e]=n||{};n=document.createElement("script");n.type="text/javascript",n.async=!0,n.src=r+"?sdkid="+e+"&lib="+t;e=document.getElementsByTagName("script")[0];e.parentNode.insertBefore(n,e)};
+            ttq.load(C.tt);
+            ttq.page();
+          }(window, document, 'ttq');
+        }
+      }
+
+      // Load when the browser is idle, or earlier on first interaction.
+      function schedule() {
+        if ('requestIdleCallback' in window) window.requestIdleCallback(load, { timeout: 2500 });
+        else setTimeout(load, 1500);
+      }
+      if (document.readyState === 'complete') schedule();
+      else window.addEventListener('load', schedule, { once: true });
+      ['pointerdown', 'keydown', 'scroll', 'touchstart'].forEach(function (ev) {
+        window.addEventListener(ev, load, { once: true, passive: true });
+      });
+
+      /**
+       * kind: 'phone' | 'whatsapp' | 'form'
+       * where: a short label for the button position (hero, nav, sticky, ...)
+       */
+      function track(kind, where) {
+        load();
+        var gaEvent = { phone: 'click_to_call', whatsapp: 'click_whatsapp', form: 'whatsapp_quote_form' }[kind];
+        var adsLabel = { phone: C.adsCall, whatsapp: C.adsWa, form: C.adsForm || C.adsWa }[kind];
+        if (window.gtag) {
+          if (C.ga) window.gtag('event', gaEvent, { link_location: where || '', page_path: location.pathname });
+          if (C.ads && adsLabel) window.gtag('event', 'conversion', { send_to: C.ads + '/' + adsLabel });
+        }
+        if (window.fbq) window.fbq('track', kind === 'form' ? 'Lead' : 'Contact', { content_name: kind });
+        if (window.ttq) window.ttq.track(kind === 'form' ? 'SubmitForm' : 'Contact', { content_name: kind });
+      }
+      window.sathaTrack = track;
+
+      document.addEventListener('click', function (e) {
+        var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+        if (!a) return;
+        var href = a.getAttribute('href') || '';
+        var where = a.getAttribute('data-track') || '';
+        if (href.indexOf('tel:') === 0) track('phone', where);
+        else if (href.indexOf('wa.me/') !== -1 || href.indexOf('api.whatsapp.com') !== -1) track('whatsapp', where);
+      }, true);
+    })();
+  </script>
+)}
+{cfg.meta && (
+  <noscript><img height="1" width="1" style="display:none" alt="" src={`https://www.facebook.com/tr?id=${cfg.meta}&ev=PageView&noscript=1`} /></noscript>
+)}

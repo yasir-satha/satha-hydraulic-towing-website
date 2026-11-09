@@ -1,0 +1,56 @@
+---
+import Logo from './Logo.astro';
+import Icon from './Icon.astro';
+import { SITE, TEL_HREF, waHref, localePath, otherLang, type Lang } from '../data/site';
+import { UI } from '../data/ui';
+import { SERVICES } from '../data/services';
+
+interface Props { lang: Lang; path: string }
+const { lang, path } = Astro.props;
+const t = UI[lang];
+const alt = otherLang(lang);
+const L = (p: string) => localePath(lang, p);
+const footerServices = ['hydraulic-flatbed-towing', 'accident-recovery', 'breakdown-towing', 'city-to-city-car-transport', 'roadside-assistance']
+  .map((s) => SERVICES.find((x) => x.slug === s)!);
+const coverageHrefs = [L('/areas/'), L('/routes/riyadh-to-jeddah/'), L('/routes/riyadh-to-dammam/'), L('/routes/riyadh-to-makkah/'), L('/routes/')];
+---
+<footer class="footer">
+  <div class="container">
+    <div class="footer__top">
+      <div class="footer__brand">
+        <Logo href={L('/')} label={SITE.name[lang]} />
+        <p class="footer__blurb">{t.footer.blurb}</p>
+      </div>
+      <nav class="footer__col" aria-label={t.footer.services}>
+        <p class="footer__h">{t.footer.services}</p>
+        <ul>
+          {footerServices.map((s) => <li><a href={L(`/services/${s.slug}/`)}>{s[lang].name}</a></li>)}
+        </ul>
+      </nav>
+      <nav class="footer__col" aria-label={t.footer.coverage}>
+        <p class="footer__h">{t.footer.coverage}</p>
+        <ul>
+          {t.footer.coverageLinks.map((label, i) => <li><a href={coverageHrefs[i]}>{label}</a></li>)}
+        </ul>
+      </nav>
+      <div class="footer__col footer__contact">
+        <p class="footer__h">{t.footer.contact}</p>
+        <ul>
+          <li><a class="c-phone" href={TEL_HREF} data-track="footer"><Icon name="phone" size={18} /><span class="ltr-num">{SITE.phoneDisplay}</span></a></li>
+          <li><a class="c-wa" href={waHref(t.waDefault)} target="_blank" rel="noopener" data-track="footer"><Icon name="whatsapp-logo" size={18} /><span class="ltr-num">{SITE.phoneIntlDisplay}</span></a></li>
+          <li><Icon name="map-pin" size={18} />{t.topbar.location}</li>
+          <li><Icon name="clock" size={18} />{t.footer.hours}</li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer__bottom">
+      <p>© {SITE.year} {SITE.name[lang]}. {t.footer.rights}</p>
+      <div class="footer__links">
+        <a href={L('/prices/')}>{t.footer.prices}</a>
+        <a href={L('/privacy/')}>{t.footer.privacy}</a>
+        <a href={L('/terms/')}>{t.footer.terms}</a>
+        <a class="footer__lang" href={localePath(alt, path)} hreflang={alt} lang={alt}>{UI[lang].nav.langName}</a>
+      </div>
+    </div>
+  </div>
+</footer>

@@ -1,0 +1,291 @@
+---
+import { Image, getImage } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Icon from './Icon.astro';
+import FaqList from './FaqList.astro';
+import FinalCta from './FinalCta.astro';
+import heroEn from '../assets/img/hero-flatbed-riyadh-night.jpg';
+import heroAr from '../assets/img/hero-flatbed-riyadh-night-rtl.jpg';
+import heroMobile from '../assets/img/hero-flatbed-riyadh-mobile.jpg';
+import featureImg from '../assets/img/hydraulic-flatbed-loading-sports-car.jpg';
+import processImg from '../assets/img/operator-strapping-wheel-flatbed.jpg';
+import riyadhImg from '../assets/img/riyadh-night-aerial.jpg';
+import { SITE, PHONE, TEL_HREF, waHref, localePath, type Lang } from '../data/site';
+import { UI } from '../data/ui';
+import { SERVICES, HOME_SERVICE_SLUGS } from '../data/services';
+import { ROUTE_TILES } from '../data/routes';
+import { AREA_PAGES, HOME_DISTRICT_SLUGS } from '../data/areas';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = UI[lang];
+const L = (p: string) => localePath(lang, p);
+const arrow = lang === 'ar' ? 'arrow-left' : 'arrow-right';
+const caret = lang === 'ar' ? 'caret-left' : 'caret-right';
+
+const heroDesktopSrc = lang === 'ar' ? heroAr : heroEn;
+const heroD = await getImage({ src: heroDesktopSrc, widths: [960, 1408], sizes: '100vw', format: 'webp', quality: 72 });
+const heroM = await getImage({ src: heroMobile, widths: [480, 768], sizes: '100vw', format: 'webp', quality: 70 });
+
+// Card copy exactly as in the desktop design
+const CARD_DESC: Record<string, Record<Lang, string>> = {
+  'accident-recovery': {
+    en: 'Damaged or non-running after a crash? We recover it carefully and deliver to Najm, the workshop or your home.',
+    ar: 'سيارتك متضررة أو لا تعمل بعد حادث؟ ننقلها بعناية إلى نجم أو الورشة أو منزلك.',
+  },
+  'breakdown-towing': {
+    en: 'Engine, gearbox or electrical failure, from any street, parking basement or highway shoulder.',
+    ar: 'عطل في المحرك أو القير أو الكهرباء، من أي شارع أو قبو مواقف أو جانب طريق سريع.',
+  },
+  'city-to-city-car-transport': {
+    en: 'Riyadh to Jeddah, Dammam, Makkah, Madinah and beyond. Secured, strapped and delivered door-to-door.',
+    ar: 'من الرياض إلى جدة والدمام ومكة والمدينة وغيرها. مثبتة بإحكام وتُسلَّم من الباب إلى الباب.',
+  },
+  'roadside-assistance': {
+    en: 'Flat battery, flat tyre or out of fuel? Quick fixes on the spot when a tow isn’t needed.',
+    ar: 'بطارية فارغة أو إطار مثقوب أو نفد الوقود؟ حلول سريعة في مكانك عندما لا تحتاج إلى سطحة.',
+  },
+};
+
+const homeServices = HOME_SERVICE_SLUGS.map((s) => SERVICES.find((x) => x.slug === s)!);
+const districts = HOME_DISTRICT_SLUGS.map((s) => AREA_PAGES.find((x) => x.slug === s)!);
+
+const title = lang === 'ar'
+  ? 'سطحة الرياض 24 ساعة | سطحة هيدروليك لنقل وسحب السيارات'
+  : 'Tow Truck Riyadh 24/7 | Hydraulic Flatbed Towing | Satha';
+const description = lang === 'ar'
+  ? `سطحة هيدروليك في الرياض على مدار 24 ساعة: سحب السيارات المعطلة، نقل سيارات الحوادث، ونقل السيارات بين المدن. وصول خلال 30 دقيقة وسعر واضح قبل أن نتحرك. اتصل ${PHONE}.`
+  : `24/7 hydraulic flatbed towing in Riyadh: breakdown towing, accident recovery and car transport to every Saudi city. Avg. 30 min arrival, price agreed upfront. Call ${PHONE}.`;
+
+const faqSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'FAQPage',
+  inLanguage: lang === 'ar' ? 'ar-SA' : 'en-SA',
+  mainEntity: t.faq.items.map((f) => ({
+    '@type': 'Question',
+    name: f.q,
+    acceptedAnswer: { '@type': 'Answer', text: f.a },
+  })),
+};
+---
+<Base lang={lang} path="/" title={title} description={description} schema={[faqSchema]}>
+  <link slot="head" rel="preload" as="image" type="image/webp" imagesrcset={heroM.srcSet.attribute} imagesizes="100vw" media="(max-width: 767px)" fetchpriority="high" />
+  <link slot="head" rel="preload" as="image" type="image/webp" imagesrcset={heroD.srcSet.attribute} imagesizes="100vw" media="(min-width: 768px)" fetchpriority="high" />
+
+  <!-- Hero -->
+  <section class="hero" aria-labelledby="hero-title">
+    <picture class="hero__media">
+      <source media="(max-width: 767px)" type="image/webp" srcset={heroM.srcSet.attribute} sizes="100vw" />
+      <source type="image/webp" srcset={heroD.srcSet.attribute} sizes="100vw" />
+      <img src={heroD.src} alt={t.hero.imgAlt} width="1408" height="768" fetchpriority="high" loading="eager" decoding="async" />
+    </picture>
+    <div class="hero__shade"></div>
+    <div class="container hero__in">
+      <div class="hero__content">
+        <p class="live-badge"><span class="dot dot--pulse"></span>{t.hero.badge}</p>
+        <h1 class="hero__title" id="hero-title">
+          <span>{t.hero.l1}</span>
+          <span class="hl">{t.hero.l2}</span>
+        </h1>
+        <p class="hero__sub"><span class="d-only">{t.hero.sub}</span><span class="m-only">{t.hero.subShort}</span></p>
+        <div class="hero__ctas">
+          <a class="cta-big cta-big--yellow" href={TEL_HREF} data-track="hero">
+            <span class="cta-big__ic"><Icon name="phone" size={22} /></span>
+            <span class="cta-big__txt">
+              <span class="cta-big__small">{t.hero.callSmall}</span>
+              <span class="cta-big__big ltr-num">{SITE.phoneDisplay}</span>
+            </span>
+            <Icon name={arrow} size={22} class="cta-big__arrow" />
+          </a>
+          <a class="cta-big cta-big--wa" href={waHref(t.waDefault)} target="_blank" rel="noopener" data-track="hero">
+            <span class="cta-big__ic"><Icon name="whatsapp-logo" size={22} /></span>
+            <span class="cta-big__txt">
+              <span class="cta-big__small">{t.hero.waSmall}</span>
+              <span class="cta-big__big">{t.hero.waBig}</span>
+            </span>
+            <Icon name={arrow} size={22} class="cta-big__arrow" />
+          </a>
+        </div>
+        <ul class="trust">
+          <li><Icon name="shield-check" size={18} />{t.hero.trust[0]}</li>
+          <li><Icon name="tag" size={18} />{t.hero.trust[1]}</li>
+          <li><Icon name="car" size={18} />{t.hero.trust[2]}</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats -->
+  <section class="stats" aria-label={lang === 'ar' ? 'أرقامنا' : 'Key facts'}>
+    <div class="container stats__in">
+      {t.stats.map((s) => (
+        <div class="stat">
+          <p class="stat__v">{s.v}</p>
+          <p class="stat__l stat__l--long">{s.l}</p>
+          <p class="stat__l stat__l--short">{s.s}</p>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section class="services" id="services" aria-labelledby="services-title">
+    <div class="container">
+      <div class="sec-head">
+        <div class="sec-head__left">
+          <p class="eyebrow">{t.services.eyebrow}</p>
+          <h2 class="section-title" id="services-title">{t.services.title}</h2>
+        </div>
+        <p class="sec-head__note">{t.services.note}</p>
+      </div>
+      <div class="services__body">
+        <article class="feature">
+          <Image class="feature__img" src={featureImg} alt={t.services.featureAlt} widths={[400, 700, 1200]} sizes="(max-width: 1279px) 100vw, 600px" format="webp" quality={72} loading="lazy" />
+          <div class="feature__overlay">
+            <span class="tag">{t.services.tag}</span>
+            <h3 class="feature__title">{t.services.featureTitle}</h3>
+            <p class="feature__desc"><span class="d-only">{t.services.featureDesc}</span><span class="m-only">{t.services.featureDescShort}</span></p>
+            <a class="feature__link" href={L('/services/hydraulic-flatbed-towing/')}>{t.services.featureLink}<Icon name={arrow} size={18} /></a>
+          </div>
+        </article>
+        <div class="svc-grid">
+          {homeServices.map((s) => (
+            <article class="svc-card">
+              <span class="icon-box"><Icon name={s.icon} size={24} /></span>
+              <div class="svc-card__main">
+                <h3 class="svc-card__title"><a href={L(`/services/${s.slug}/`)}>{s[lang].name}</a></h3>
+                <p class="svc-card__short">{s[lang].short}</p>
+              </div>
+              <p class="svc-card__desc">{CARD_DESC[s.slug][lang]}</p>
+              <a class="svc-card__link" href={waHref(s[lang].wa)} target="_blank" rel="noopener" data-track={`service-${s.slug}`}><Icon name="whatsapp-logo" size={18} />{t.services.cardLink}</a>
+              <Icon name={caret} size={18} class="svc-card__caret" />
+            </article>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section class="how on-dark" id="how-it-works" aria-labelledby="how-title">
+    <div class="container how__in">
+      <div class="how__media">
+        <Image src={processImg} alt={t.how.imgAlt} widths={[580, 1160]} sizes="(max-width: 1023px) 0px, 580px" format="webp" quality={72} loading="lazy" />
+        <div class="img-badge">
+          <span class="img-badge__ic"><Icon name="shield-check" size={20} /></span>
+          <span>
+            <span class="img-badge__t">{t.how.badgeTitle}</span>
+            <span class="img-badge__s">{t.how.badgeSub}</span>
+          </span>
+        </div>
+      </div>
+      <div class="how__content">
+        <div class="how__head">
+          <p class="eyebrow">{t.how.eyebrow}</p>
+          <h2 class="section-title" id="how-title">{t.how.title}</h2>
+        </div>
+        <ol class="steps">
+          {t.how.steps.map((s, i) => (
+            <li>
+              <span class="steps__n">{String(i + 1).padStart(2, '0')}</span>
+              <div>
+                <h3 class="steps__t">{s.t}</h3>
+                <p class="steps__d">{s.d}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+        <div class="btn-row">
+          <a class="btn btn--yellow" href={TEL_HREF} data-track="how"><Icon name="phone" size={20} />{t.how.call} <span class="ltr-num">{SITE.phoneDisplay}</span></a>
+          <a class="btn btn--wa" href={waHref(t.waDefault)} target="_blank" rel="noopener" data-track="how"><Icon name="whatsapp-logo" size={20} />{t.how.wa}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Coverage -->
+  <section class="coverage" id="coverage" aria-labelledby="coverage-title">
+    <div class="container coverage__in">
+      <div class="coverage__content">
+        <p class="eyebrow">{t.coverage.eyebrow}</p>
+        <h2 class="section-title" id="coverage-title">{t.coverage.title}</h2>
+        <p class="coverage__desc">{t.coverage.desc}</p>
+        <div class="districts">
+          <h3 class="districts__head"><Icon name="map-pin" size={18} />{t.coverage.districtsTitle}</h3>
+          <ul class="chips">
+            {districts.map((d) => <li><a class="chip" href={L(`/areas/${d.slug}/`)}>{d[lang].name}</a></li>)}
+            <li><a class="chip chip--dark" href={L('/areas/')}>{t.coverage.allDistricts}</a></li>
+          </ul>
+        </div>
+        <div class="coverage__img">
+          <Image src={riyadhImg} alt={t.coverage.imgAlt} widths={[612, 1224]} sizes="(max-width: 767px) 0px, (max-width: 1279px) 50vw, 612px" format="webp" quality={70} loading="lazy" />
+          <p class="img-label"><span class="dot"></span>{t.coverage.imgLabel}</p>
+        </div>
+      </div>
+      <div class="routes">
+        <div class="routes__head">
+          <h3 class="routes__title">{t.coverage.routesTitle}</h3>
+          <span class="routes__d2d"><Icon name="truck" size={16} />{t.coverage.doorToDoor}</span>
+        </div>
+        <div class="routes__grid">
+          {ROUTE_TILES.map((r) => (
+            <a class="tile" href={L(`/routes/${r.slug}/`)}>
+              <span class="tile__line" aria-hidden="true">
+                <span class="tile__origin"></span><span class="tile__rule"></span><Icon name="map-pin" weight="fill" size={18} />
+              </span>
+              <span>
+                <span class="tile__from">{t.coverage.from}</span>
+                <span class="tile__city">{r[lang]}</span>
+              </span>
+              <span class="tile__km">{r.km} {t.coverage.km}</span>
+            </a>
+          ))}
+          <div class="tile tile--dark">
+            <div>
+              <p class="tile__t">{t.coverage.anotherTitle}</p>
+              <p class="tile__d">{t.coverage.anotherDesc}</p>
+            </div>
+            <a class="btn btn--wa" href={waHref(lang === 'ar' ? 'السلام عليكم، أريد نقل سيارتي من الرياض إلى مدينة أخرى.' : 'Hello Satha, I want to move my car from Riyadh to another city.')} target="_blank" rel="noopener" data-track="routes-another"><Icon name="whatsapp-logo" size={16} />{t.coverage.ask}</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why us -->
+  <section class="why" aria-labelledby="why-title">
+    <div class="container">
+      <div class="sec-head">
+        <div class="sec-head__left">
+          <p class="eyebrow">{t.why.eyebrow}</p>
+          <h2 class="section-title" id="why-title">{t.why.title}</h2>
+        </div>
+      </div>
+      <div class="reasons">
+        {t.why.reasons.map((r) => (
+          <div class="reason">
+            <Icon name={r.icon} size={28} />
+            <h3 class="reason__t">{r.t}</h3>
+            <p class="reason__d">{r.d}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq" id="faq" aria-labelledby="faq-title">
+    <div class="container faq__in">
+      <div class="faq__intro">
+        <p class="eyebrow">{t.faq.eyebrow}</p>
+        <h2 class="section-title" id="faq-title">{t.faq.title}</h2>
+        <p class="faq__desc">{t.faq.desc}</p>
+        <a class="btn btn--dark" href={TEL_HREF} data-track="faq"><Icon name="phone" size={18} /><span class="ltr-num">{SITE.phoneDisplay}</span></a>
+      </div>
+      <FaqList items={t.faq.items} />
+    </div>
+  </section>
+
+  <FinalCta lang={lang} />
+</Base>
+

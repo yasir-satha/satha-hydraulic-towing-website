@@ -1,0 +1,39 @@
+---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+
+interface Props {
+  name: string;
+  /** Phosphor weight. The design uses bold everywhere except filled pins. */
+  weight?: 'bold' | 'fill' | 'regular';
+  size?: number;
+  class?: string;
+  label?: string;
+}
+
+const { name, weight = 'bold', size = 20, class: className, label } = Astro.props;
+// WhatsApp uses the official glyph (Simple Icons, CC0) — the Phosphor version reads too thin.
+const isWhatsApp = name === 'whatsapp-logo';
+const raw = isWhatsApp
+  ? readFileSync(join(process.cwd(), 'node_modules/simple-icons/icons/whatsapp.svg'), 'utf8')
+  : readFileSync(
+      join(process.cwd(), 'node_modules/@phosphor-icons/core/assets', weight,
+        weight === 'regular' ? `${name}.svg` : `${name}-${weight}.svg`),
+      'utf8',
+    );
+const inner = raw.replace(/^<svg[^>]*>/, '').replace(/<\/svg>\s*$/, '').replace(/<title>.*?<\/title>/, '');
+const viewBox = isWhatsApp ? '0 0 24 24' : '0 0 256 256';
+---
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox={viewBox}
+  width={size}
+  height={size}
+  fill="currentColor"
+  class:list={['icon', className]}
+  aria-hidden={label ? undefined : 'true'}
+  role={label ? 'img' : undefined}
+  aria-label={label}
+  focusable="false"
+  set:html={inner}
+/>

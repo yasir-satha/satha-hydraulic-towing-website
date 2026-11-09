@@ -1,0 +1,22 @@
+---
+import mark from './mark.svg.txt?raw';
+
+interface Props {
+  size?: 'md' | 'sm';
+  href?: string;
+  label?: string;
+}
+const { size = 'md', href, label = 'Satha Hydraulic Towing Service' } = Astro.props;
+const Tag = href ? 'a' : 'div';
+---
+<Tag dir="ltr" class:list={['logo', `logo--${size}`]} href={href} aria-label={href ? label : undefined}>
+  <svg class="logo__mark" viewBox="0 0 48 48" width="48" height="48" aria-hidden="true" set:html={mark} />
+  <span class="logo__word" aria-hidden={href ? 'true' : undefined}>
+    <span class="logo__name">
+      <span class="logo__en" lang="en">SATHA</span>
+      <span class="logo__div"></span>
+      <span class="logo__ar" lang="ar">سطحة</span>
+    </span>
+    <span class="logo__tag"><span lang="en">HYDRAULIC TOWING SERVICE</span>&nbsp; · &nbsp;<span lang="ar">خدمة سحب هيدروليك</span></span>
+  </span>
+</Tag>
