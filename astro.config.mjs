@@ -10,6 +10,13 @@ const site =
     ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
     : 'http://localhost:4321');
 
+if (!process.env.SITE_URL && process.env.VERCEL_ENV === 'production') {
+  console.warn(
+    `\n[seo] SITE_URL is not set — canonical URLs, sitemap and robots.txt will use ${site}.\n` +
+      '      Set SITE_URL to your real domain in Vercel → Settings → Environment Variables and redeploy.\n',
+  );
+}
+
 export default defineConfig({
   site,
   trailingSlash: 'always',
@@ -28,6 +35,7 @@ export default defineConfig({
   integrations: [
     sitemap({
       filter: (page) => !page.includes('/404'),
+      lastmod: new Date(),
       i18n: {
         defaultLocale: 'en',
         locales: { en: 'en-SA', ar: 'ar-SA' },

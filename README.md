@@ -30,6 +30,21 @@ Requires Node 22.23+ (Node 24 recommended).
 
 Adding a new district, route or service = add one entry to the matching data file; the EN and AR pages, sitemap, hreflang and internal links are generated automatically.
 
+## SEO & AI search (GEO)
+All of these are generated at build time from the data files and `SITE_URL`:
+
+| URL | What it is | Source |
+| --- | --- | --- |
+| `/sitemap.xml` | Sitemap index — **submit this one** | `src/pages/sitemap.xml.ts` |
+| `/sitemap-0.xml` | Every page, with EN/AR hreflang | `@astrojs/sitemap` in `astro.config.mjs` |
+| `/robots.txt` | Allows all search engines and AI crawlers, links the sitemap | `src/pages/robots.txt.ts` |
+| `/llms.txt` | Plain summary of the business and pages for AI chatbots (llmstxt.org) | `src/pages/llms.txt.ts` |
+| Meta, canonical, hreflang, Open Graph, JSON-LD | Every page `<head>` | `src/layouts/Base.astro` + page components |
+
+**Google Search Console:** add a *URL-prefix* property for your domain → choose *HTML tag* → paste the `content` value into `PUBLIC_GOOGLE_SITE_VERIFICATION` → redeploy → Verify → Sitemaps → submit `sitemap.xml`.
+
+**Bing Webmaster Tools** (powers ChatGPT search and Copilot): import the site from Search Console, or use the meta-tag option with `PUBLIC_BING_SITE_VERIFICATION`, then submit `sitemap.xml`.
+
 ## Tracked conversions
 Clicks on any `tel:` link, any WhatsApp link, and the "Get a price" form are sent to every configured platform:
 - GA4 events: `click_to_call`, `click_whatsapp`, `whatsapp_quote_form` (mark them as key events in GA4)

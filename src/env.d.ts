@@ -12,6 +12,7 @@ interface ImportMetaEnv {
   readonly PUBLIC_META_PIXEL_ID?: string;
   readonly PUBLIC_TIKTOK_PIXEL_ID?: string;
   readonly PUBLIC_GOOGLE_SITE_VERIFICATION?: string;
+  readonly PUBLIC_BING_SITE_VERIFICATION?: string;
   readonly PUBLIC_FACEBOOK_DOMAIN_VERIFICATION?: string;
 }
 interface ImportMeta {

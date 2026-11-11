@@ -102,7 +102,7 @@ const jsonLd = [business, website, ...schema];
     <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="manifest" href="/site.webmanifest" />
-    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={SITE.name[lang]} />
@@ -122,6 +122,9 @@ const jsonLd = [business, website, ...schema];
 
     {import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION && (
       <meta name="google-site-verification" content={import.meta.env.PUBLIC_GOOGLE_SITE_VERIFICATION} />
+    )}
+    {import.meta.env.PUBLIC_BING_SITE_VERIFICATION && (
+      <meta name="msvalidate.01" content={import.meta.env.PUBLIC_BING_SITE_VERIFICATION} />
     )}
     {import.meta.env.PUBLIC_FACEBOOK_DOMAIN_VERIFICATION && (
       <meta name="facebook-domain-verification" content={import.meta.env.PUBLIC_FACEBOOK_DOMAIN_VERIFICATION} />
