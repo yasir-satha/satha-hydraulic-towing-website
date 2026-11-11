@@ -16,7 +16,7 @@ const cfg = {
   adsForm: import.meta.env.PUBLIC_GOOGLE_ADS_FORM_LABEL || '',
   meta: import.meta.env.PUBLIC_META_PIXEL_ID || '',
   tt: import.meta.env.PUBLIC_TIKTOK_PIXEL_ID || '',
-  gtm: import.meta.env.PUBLIC_GTM_ID !== 'off',
+  gtm: Boolean(import.meta.env.PUBLIC_GTM_ID),
 };
 const enabled = Boolean(cfg.ga || cfg.ads || cfg.meta || cfg.tt || cfg.gtm);
 ---

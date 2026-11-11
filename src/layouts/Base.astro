@@ -31,9 +31,8 @@ const arUrl = abs(localePath('ar', path));
 // Open Graph images exported from the design file (1200×630), one per language
 const ogUrl = abs(lang === 'ar' ? '/og-ar.jpg' : '/og-en.jpg');
 const t = UI[lang];
-// Google Tag Manager container (override with PUBLIC_GTM_ID; set it to "off" to disable)
-const gtmEnv = import.meta.env.PUBLIC_GTM_ID;
-const gtmId = gtmEnv === 'off' ? '' : gtmEnv || 'GTM-5J7FMB2R';
+// Google Tag Manager container ID (only loads when PUBLIC_GTM_ID is set)
+const gtmId = import.meta.env.PUBLIC_GTM_ID || '';
 
 const business = {
   '@context': 'https://schema.org',
