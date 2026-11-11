@@ -25,6 +25,7 @@ Requires Node 22.23+ (Node 24 recommended).
 | City route pages | `src/data/routes.ts` |
 | Riyadh district pages | `src/data/areas.ts` |
 | Prices / privacy / terms | `src/data/pages.ts` |
+| Google Tag Manager | `src/layouts/Base.astro` (`PUBLIC_GTM_ID`, default `GTM-5J7FMB2R`) |
 | Analytics, Ads, Meta & TikTok pixels | `src/components/Analytics.astro` (IDs via env vars) |
 | Design tokens & styles | `src/styles/global.css` |
 
@@ -47,6 +48,7 @@ All of these are generated at build time from the data files and `SITE_URL`:
 
 ## Tracked conversions
 Clicks on any `tel:` link, any WhatsApp link, and the "Get a price" form are sent to every configured platform:
+- GTM dataLayer events: `click_to_call`, `click_whatsapp`, `whatsapp_quote_form` (use as Custom Event triggers)
 - GA4 events: `click_to_call`, `click_whatsapp`, `whatsapp_quote_form` (mark them as key events in GA4)
 - Google Ads: conversion labels from `PUBLIC_GOOGLE_ADS_*_LABEL`
 - Meta Pixel: `Contact` / `Lead`

@@ -31,6 +31,9 @@ const arUrl = abs(localePath('ar', path));
 // Open Graph images exported from the design file (1200×630), one per language
 const ogUrl = abs(lang === 'ar' ? '/og-ar.jpg' : '/og-en.jpg');
 const t = UI[lang];
+// Google Tag Manager container (override with PUBLIC_GTM_ID; set it to "off" to disable)
+const gtmEnv = import.meta.env.PUBLIC_GTM_ID;
+const gtmId = gtmEnv === 'off' ? '' : gtmEnv || 'GTM-5J7FMB2R';
 
 const business = {
   '@context': 'https://schema.org',
@@ -85,6 +88,16 @@ const jsonLd = [business, website, ...schema];
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    {gtmId && (
+      <script is:inline define:vars={{ gtmId }}>
+        /* Google Tag Manager (official snippet) */
+        (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+        new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+        j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+        'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+        })(window,document,'script','dataLayer',gtmId);
+      </script>
+    )}
     <title>{title}</title>
     <meta name="description" content={description} />
     <link rel="canonical" href={canonical} />
@@ -168,6 +181,9 @@ const jsonLd = [business, website, ...schema];
     <script type="application/ld+json" set:html={JSON.stringify(jsonLd).replace(/</g, '\\u003c')} />
   </head>
   <body>
+    {gtmId && (
+      <noscript><iframe src={`https://www.googletagmanager.com/ns.html?id=${gtmId}`} height="0" width="0" style="display:none;visibility:hidden" title="Google Tag Manager"></iframe></noscript>
+    )}
     <a class="skip-link" href="#main">{t.skip}</a>
     <Header lang={lang} path={path} />
     <main id="main">

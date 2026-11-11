@@ -16,8 +16,9 @@ const cfg = {
   adsForm: import.meta.env.PUBLIC_GOOGLE_ADS_FORM_LABEL || '',
   meta: import.meta.env.PUBLIC_META_PIXEL_ID || '',
   tt: import.meta.env.PUBLIC_TIKTOK_PIXEL_ID || '',
+  gtm: import.meta.env.PUBLIC_GTM_ID !== 'off',
 };
-const enabled = Boolean(cfg.ga || cfg.ads || cfg.meta || cfg.tt);
+const enabled = Boolean(cfg.ga || cfg.ads || cfg.meta || cfg.tt || cfg.gtm);
 ---
 {enabled && (
   <script is:inline define:vars={{ cfg }}>
@@ -84,6 +85,11 @@ const enabled = Boolean(cfg.ga || cfg.ads || cfg.meta || cfg.tt);
         load();
         var gaEvent = { phone: 'click_to_call', whatsapp: 'click_whatsapp', form: 'whatsapp_quote_form' }[kind];
         var adsLabel = { phone: C.adsCall, whatsapp: C.adsWa, form: C.adsForm || C.adsWa }[kind];
+        // Google Tag Manager: use these as Custom Event triggers (click_to_call, click_whatsapp, whatsapp_quote_form)
+        if (C.gtm) {
+          window.dataLayer = window.dataLayer || [];
+          window.dataLayer.push({ event: gaEvent, link_location: where || '', page_path: location.pathname });
+        }
         if (window.gtag) {
           if (C.ga) window.gtag('event', gaEvent, { link_location: where || '', page_path: location.pathname });
           if (C.ads && adsLabel) window.gtag('event', 'conversion', { send_to: C.ads + '/' + adsLabel });
