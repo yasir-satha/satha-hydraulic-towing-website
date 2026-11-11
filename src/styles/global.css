@@ -544,7 +544,11 @@ a.tile:hover { border-color: var(--text); transform: translateY(-2px); }
   :root { --header-h: 76px; }
   /* Call + WhatsApp always reachable at the bottom on phones and tablets */
   body { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
-  .sticky-bar { display: flex; }
+  .sticky-bar {
+    display: flex; transform: translateY(110%); visibility: hidden;
+    transition: transform .25s ease, visibility 0s linear .25s;
+  }
+  .sticky-bar.is-visible { transform: none; visibility: visible; transition: transform .25s ease, visibility 0s; }
   .float-wa { display: none; }
   .topbar { display: none; }
   .nav-links, .header .btn--yellow { display: none; }
@@ -576,11 +580,12 @@ a.tile:hover { border-color: var(--text); transform: translateY(-2px); }
 @media (max-width: 767px) {
 
   /* Hero: portrait photo on top, content below (mobile design) */
-  .hero__in { min-height: 0; padding-top: 280px; padding-bottom: 28px; align-items: flex-end; }
+  .hero__in { min-height: 0; padding-top: 220px; padding-bottom: 28px; align-items: flex-end; }
   .hero__shade, [dir='rtl'] .hero__shade {
     background: linear-gradient(180deg, rgba(15,16,18,0) 0%, rgba(15,16,18,.15) 30%, rgba(15,16,18,.9) 44%, #0f1012 60%);
   }
-  .hero__media img { object-position: center top; }
+  /* Photo shifted up (crops empty sky) so the truck stays above the text with the shorter hero */
+  .hero__media img { object-position: center -80px; }
   .hero__content { gap: 20px; }
   .live-badge { display: inline-flex; }
   .hero__sub { font-size: 16px; }

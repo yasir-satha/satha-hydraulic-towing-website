@@ -14,3 +14,16 @@ const href = waHref(wa ?? t.waDefault);
   <a class="btn btn--yellow" href={TEL_HREF} data-track="sticky"><Icon name="phone" size={20} />{t.sticky.call}</a>
   <a class="btn btn--wa" href={href} target="_blank" rel="noopener" data-track="sticky"><Icon name="whatsapp-logo" size={20} />{t.sticky.wa}</a>
 </div>
+<script is:inline>
+  /* Phones/tablets: the bottom Call + WhatsApp bar appears only after the hero (which has its own call buttons) scrolls out of view. */
+  (function () {
+    var bar = document.querySelector('.sticky-bar');
+    if (!bar) return;
+    var hero = document.querySelector('.hero, .page-hero');
+    if (!hero || !('IntersectionObserver' in window)) { bar.classList.add('is-visible'); return; }
+    new IntersectionObserver(function (entries) {
+      var e = entries[0];
+      bar.classList.toggle('is-visible', !e.isIntersecting && e.boundingClientRect.top < 0);
+    }).observe(hero);
+  })();
+</script>

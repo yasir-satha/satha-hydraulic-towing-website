@@ -112,7 +112,8 @@ const asideDesc = lang === 'ar' ? 'يرد عليك شخص حقيقي على مد
           </section>
         ))}
         <figure>
-          <Image src={image} alt={imageAlt} widths={[480, 800, 1200]} sizes="(max-width: 1023px) 100vw, 800px" format="webp" quality={70} loading="lazy" class="prose-img" />
+          {/* Same widths/quality as the hero image, so the browser reuses the file it already downloaded */}
+          <Image src={image} alt={imageAlt} widths={[768, 1408]} sizes="(max-width: 1023px) 100vw, 800px" format="webp" quality={60} loading="lazy" class="prose-img" />
         </figure>
       </article>
       <aside class="aside">

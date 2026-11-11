@@ -1,6 +1,6 @@
 ---
 /**
- * Google Analytics 4, Google Ads, Meta Pixel and TikTok Pixel.
+ * Google Tag Manager, Google Analytics 4, Google Ads, Meta Pixel and TikTok Pixel.
  * Every tag is optional: set its ID as an environment variable (see .env.example)
  * and it switches on. Nothing loads when no IDs are set.
  *
@@ -16,7 +16,7 @@ const cfg = {
   adsForm: import.meta.env.PUBLIC_GOOGLE_ADS_FORM_LABEL || '',
   meta: import.meta.env.PUBLIC_META_PIXEL_ID || '',
   tt: import.meta.env.PUBLIC_TIKTOK_PIXEL_ID || '',
-  gtm: Boolean(import.meta.env.PUBLIC_GTM_ID),
+  gtm: import.meta.env.PUBLIC_GTM_ID || '',
 };
 const enabled = Boolean(cfg.ga || cfg.ads || cfg.meta || cfg.tt || cfg.gtm);
 ---
@@ -29,6 +29,15 @@ const enabled = Boolean(cfg.ga || cfg.ads || cfg.meta || cfg.tt || cfg.gtm);
       function load() {
         if (loaded) return;
         loaded = true;
+
+        // Google Tag Manager (official snippet, loaded with the other tags to keep mobile speed high)
+        if (C.gtm) {
+          (function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer',C.gtm);
+        }
 
         // Google tag (GA4 + Google Ads share one gtag.js)
         if (C.ga || C.ads) {
