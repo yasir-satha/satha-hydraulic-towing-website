@@ -32,3 +32,11 @@ export interface LandingPage {
   en: PageCopy;
   ar: PageCopy;
 }
+
+export interface RoutePage extends LandingPage {
+  /** City slugs from data/cities.ts */
+  from: string;
+  to: string;
+  /** Approximate road distance, formatted (e.g. "1,330") */
+  km: string;
+}

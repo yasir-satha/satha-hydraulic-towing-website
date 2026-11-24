@@ -89,18 +89,19 @@ const enabled = Boolean(cfg.ga || cfg.ads || cfg.meta || cfg.tt || cfg.gtm);
       /**
        * kind: 'phone' | 'whatsapp' | 'form'
        * where: a short label for the button position (hero, nav, sticky, ...)
+       * extra: optional extra values sent with the event (e.g. from_city, to_city, car_type)
        */
-      function track(kind, where) {
+      function track(kind, where, extra) {
         load();
         var gaEvent = { phone: 'click_to_call', whatsapp: 'click_whatsapp', form: 'whatsapp_quote_form' }[kind];
         var adsLabel = { phone: C.adsCall, whatsapp: C.adsWa, form: C.adsForm || C.adsWa }[kind];
         // Google Tag Manager: use these as Custom Event triggers (click_to_call, click_whatsapp, whatsapp_quote_form)
         if (C.gtm) {
           window.dataLayer = window.dataLayer || [];
-          window.dataLayer.push({ event: gaEvent, link_location: where || '', page_path: location.pathname });
+          window.dataLayer.push(Object.assign({ event: gaEvent, link_location: where || '' }, extra || {}, { page_path: location.pathname }));
         }
         if (window.gtag) {
-          if (C.ga) window.gtag('event', gaEvent, { link_location: where || '', page_path: location.pathname });
+          if (C.ga) window.gtag('event', gaEvent, Object.assign({ link_location: where || '' }, extra || {}, { page_path: location.pathname }));
           if (C.ads && adsLabel) window.gtag('event', 'conversion', { send_to: C.ads + '/' + adsLabel });
         }
         if (window.fbq) window.fbq('track', kind === 'form' ? 'Lead' : 'Contact', { content_name: kind });

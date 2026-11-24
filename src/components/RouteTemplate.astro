@@ -1,0 +1,180 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Icon from './Icon.astro';
+import FaqList from './FaqList.astro';
+import FinalCta from './FinalCta.astro';
+import IntercityQuote from './IntercityQuote.astro';
+import heroImg from '../assets/img/hero-flatbed-riyadh-night.jpg';
+import { SITE, TEL_HREF, waHref, localePath, type Lang } from '../data/site';
+import { UI } from '../data/ui';
+import { ROUTES, routeBySlug } from '../data/routes';
+import { HUB } from '../data/routes-hub';
+import { cityName, cityFull } from '../data/cities';
+import { SERVICES } from '../data/services';
+import { SECTION_LABEL } from '../lib/landing';
+import type { RoutePage } from '../data/types';
+
+interface Props { lang: Lang; page: RoutePage }
+const { lang, page } = Astro.props;
+const c = page[lang];
+const t = UI[lang];
+const h = HUB[lang];
+const path = `/routes/${page.slug}/`;
+const site = Astro.site!;
+const abs = (p: string) => new URL(localePath(lang, p), site).href;
+const isAr = lang === 'ar';
+
+const fromN = cityFull(page.from, lang);
+const toN = cityFull(page.to, lang);
+const imageAlt = isAr
+  ? `سطحة هيدروليك تنقل سيارة من ${fromN} إلى ${toN}`
+  : `Hydraulic flatbed carrying a car from ${fromN} to ${toN}`;
+
+const facts = [
+  { icon: 'path', l: isAr ? 'المسافة' : 'Distance', v: `${page.km} ${h.km}` },
+  { icon: 'tag', l: isAr ? 'السعر' : 'Price', v: isAr ? 'عرض ثابت قبل الحجز' : 'Fixed quote before booking' },
+  { icon: 'house-line', l: isAr ? 'طريقة الاستلام' : 'Pickup', v: isAr ? 'من الباب إلى الباب' : 'Door to door' },
+];
+
+// Other routes: the reverse trip, then routes that share a city (non-Riyadh city first), then the hub.
+const reverse = routeBySlug(`${page.to}-to-${page.from}`);
+const shared = (r: RoutePage, slug: string) => r.from === slug || r.to === slug;
+const key = page.from === 'riyadh' ? page.to : page.from;
+const others = ROUTES
+  .filter((r) => r !== page && r !== reverse && (shared(r, page.from) || shared(r, page.to)))
+  .sort((a, b) => Number(shared(b, key)) - Number(shared(a, key)))
+  .slice(0, 6);
+const card = (r: RoutePage) => ({ href: localePath(lang, `/routes/${r.slug}/`), title: r[lang].name, desc: r[lang].short, icon: 'path' });
+const cityToCity = SERVICES.find((s) => s.slug === 'city-to-city-car-transport')!;
+const related = [
+  ...(reverse ? [card(reverse)] : []),
+  ...others.map(card),
+  { href: localePath(lang, '/routes/'), title: SECTION_LABEL.routes[lang], desc: isAr ? 'جميع المدن والمسارات والأسعار' : 'All cities, routes and prices', icon: 'map-trifold' },
+  { href: localePath(lang, `/services/${cityToCity.slug}/`), title: cityToCity[lang].name, desc: cityToCity[lang].short, icon: cityToCity.icon },
+];
+
+const crumbs = [
+  { name: t.breadcrumbHome, href: '/' },
+  { name: SECTION_LABEL.routes[lang], href: '/routes/' },
+  { name: c.name, href: path },
+];
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: crumbs.map((b, i) => ({ '@type': 'ListItem', position: i + 1, name: b.name, item: abs(b.href) })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: c.h1,
+    serviceType: isAr ? 'نقل سيارات بين المدن' : 'Intercity car transport',
+    description: c.description,
+    url: abs(path),
+    inLanguage: isAr ? 'ar-SA' : 'en',
+    provider: { '@id': new URL('/#business', site).href },
+    areaServed: [
+      { '@type': 'City', name: cityName(page.from, 'en') },
+      { '@type': 'City', name: cityName(page.to, 'en') },
+    ],
+    availableChannel: {
+      '@type': 'ServiceChannel',
+      servicePhone: { '@type': 'ContactPoint', telephone: SITE.phoneE164 },
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    inLanguage: isAr ? 'ar-SA' : 'en',
+    mainEntity: c.faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+const faqTitle = isAr ? 'أسئلة شائعة' : 'Frequently asked questions';
+const otherTitle = isAr ? 'مسارات أخرى' : 'Other routes';
+---
+<Base lang={lang} path={path} title={c.title} description={c.description} schema={schema} wa={c.wa}>
+  <section class="page-hero">
+    <Image class="page-hero__img" src={heroImg} alt="" widths={[768, 1408]} sizes="100vw" format="webp" quality={60} loading="eager" fetchpriority="high" />
+    <div class="container">
+      <div class="page-hero__in">
+        <nav aria-label={isAr ? 'مسار التنقل' : 'Breadcrumb'}>
+          <ol class="crumbs">
+            {crumbs.map((b, i) => (
+              <li>{i < crumbs.length - 1 ? <a href={localePath(lang, b.href)}>{b.name}</a> : <span aria-current="page">{b.name}</span>}</li>
+            ))}
+          </ol>
+        </nav>
+        <h1>{c.h1}</h1>
+        <dl class="facts">
+          {facts.map((f) => (
+            <div class="facts__i">
+              <dt><Icon name={f.icon} size={16} />{f.l}</dt>
+              <dd>{f.v}</dd>
+            </div>
+          ))}
+        </dl>
+        <p class="page-hero__lead">{c.lead}</p>
+        <div class="btn-row">
+          <a class="btn btn--yellow" href={TEL_HREF} data-track="routes-hero"><Icon name="phone" size={20} />{t.how.call} <span class="ltr-num">{SITE.phoneDisplay}</span></a>
+          <a class="btn btn--wa" href={waHref(c.wa)} target="_blank" rel="noopener" data-track="routes-hero"><Icon name="whatsapp-logo" size={20} />{t.how.wa}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="page-body">
+    <div class="container page-body__in page-body__in--form-first">
+      <article class="prose">
+        <section>
+          <h2>{h.stepsTitle}</h2>
+          <ol class="steps-list">
+            {h.steps.map((s, i) => (
+              <li><span class="steps-list__n">{i + 1}</span><span><strong>{s.t}</strong> {s.d}</span></li>
+            ))}
+          </ol>
+        </section>
+        {c.sections.map((s) => (
+          <section>
+            <h2>{s.h}</h2>
+            {s.p?.map((p) => <p>{p}</p>)}
+            {s.list && <ul>{s.list.map((li) => <li>{li}</li>)}</ul>}
+          </section>
+        ))}
+        <figure>
+          <Image src={heroImg} alt={imageAlt} widths={[768, 1408]} sizes="(max-width: 1023px) 100vw, 800px" format="webp" quality={60} loading="lazy" class="prose-img" />
+        </figure>
+      </article>
+      <aside class="aside">
+        <IntercityQuote lang={lang} from={page.from} to={page.to} where="route-page" />
+      </aside>
+    </div>
+  </section>
+
+  <section class="page-faq" aria-labelledby="page-faq-title">
+    <div class="container">
+      <h2 class="section-title" id="page-faq-title">{faqTitle}</h2>
+      <FaqList items={c.faqs} />
+    </div>
+  </section>
+
+  <section class="related" aria-labelledby="related-title">
+    <div class="container">
+      <h2 class="section-title" id="related-title">{otherTitle}</h2>
+      <div class="link-grid">
+        {related.map((r) => (
+          <a class="link-card" href={r.href}>
+            <span class="icon-box"><Icon name={r.icon} size={22} /></span>
+            <span>
+              <span class="link-card__t">{r.title}</span>
+              <span class="link-card__d">{r.desc}</span>
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <FinalCta lang={lang} wa={c.wa} form="none" />
+</Base>

@@ -16,7 +16,7 @@ const en = {
     home: 'Home',
     prices: 'Prices',
     areas: 'Areas',
-    routes: 'Routes',
+    routes: 'Intercity transport',
   },
   hero: {
     badge: 'Available now · Avg. 30 min arrival in Riyadh',

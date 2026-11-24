@@ -1,0 +1,136 @@
+---
+/**
+ * Intercity quote form: city dropdowns + car type + optional date and name.
+ * Opens WhatsApp with a pre-written message and pushes `whatsapp_quote_form`
+ * (with from_city / to_city / car_type) to the dataLayer before WhatsApp opens.
+ *
+ * Any link with data-iq-from / data-iq-to (e.g. "Get a price" on route cards)
+ * pre-selects the cities in this form and scrolls to it.
+ */
+import Icon from './Icon.astro';
+import { SITE, TEL_HREF, type Lang } from '../data/site';
+import { CITIES, OTHER_CITY } from '../data/cities';
+import { IQ } from '../data/routes-hub';
+
+interface Props { lang: Lang; from?: string; to?: string; id?: string; where?: string }
+const { lang, from = '', to = '', id = 'intercity-quote', where = 'intercity-quote' } = Astro.props;
+const q = IQ[lang];
+const cities = [...CITIES, OTHER_CITY];
+const i18n = {
+  errReq: q.errReq, errSame: q.errSame, msg: q.msg, msgDate: q.msgDate, msgEarliest: q.msgEarliest, msgName: q.msgName,
+  cities: Object.fromEntries(cities.map((c) => [c.slug, c[lang]])),
+  cars: Object.fromEntries(q.cars.map((c) => [c.id, c.m])),
+};
+---
+<form class="quote iq" id={id} data-iq data-wa={SITE.whatsappNumber} data-where={where} data-i18n={JSON.stringify(i18n)} novalidate>
+  <div>
+    <h2 class="quote__title">{q.title}</h2>
+    <p class="quote__sub">{q.sub}</p>
+  </div>
+  <div class="iq__grid">
+    <div class="iq__f">
+      <label for={`${id}-from`}><Icon name="map-pin" size={16} />{q.from}</label>
+      <select id={`${id}-from`} name="from" required>
+        <option value="" disabled selected={!from}>{q.choose}</option>
+        {cities.map((c) => <option value={c.slug} selected={c.slug === from}>{c[lang]}</option>)}
+      </select>
+    </div>
+    <div class="iq__f">
+      <label for={`${id}-to`}><Icon name="flag-checkered" size={16} />{q.to}</label>
+      <select id={`${id}-to`} name="to" required>
+        <option value="" disabled selected={!to}>{q.choose}</option>
+        {cities.map((c) => <option value={c.slug} selected={c.slug === to}>{c[lang]}</option>)}
+      </select>
+    </div>
+    <div class="iq__f iq__f--wide">
+      <label for={`${id}-car`}><Icon name="car-profile" size={16} />{q.car}</label>
+      <select id={`${id}-car`} name="car" required>
+        <option value="" disabled selected>{q.chooseCar}</option>
+        {q.cars.map((c) => <option value={c.id}>{c.l}</option>)}
+      </select>
+    </div>
+    <div class="iq__f">
+      <label for={`${id}-date`}><Icon name="calendar-blank" size={16} />{q.date} <span class="iq__opt">({q.optional})</span></label>
+      <input id={`${id}-date`} name="date" type="date" aria-describedby={`${id}-date-hint`} />
+      <span class="iq__hint" id={`${id}-date-hint`}>{q.dateHint}</span>
+    </div>
+    <div class="iq__f">
+      <label for={`${id}-name`}>{q.name} <span class="iq__opt">({q.optional})</span></label>
+      <input id={`${id}-name`} name="name" type="text" autocomplete="name" />
+    </div>
+  </div>
+  <p class="iq__err" role="alert" aria-live="assertive"></p>
+  <button class="btn btn--wa" type="submit"><Icon name="whatsapp-logo" size={20} />{q.send}</button>
+  <p class="quote__foot">{q.prefer} <a href={TEL_HREF} data-track={where}>{q.callLink} <span class="ltr-num">{SITE.phoneDisplay}</span></a></p>
+</form>
+
+<script>
+  type I18n = {
+    errReq: string; errSame: string; msg: string; msgDate: string; msgEarliest: string; msgName: string;
+    cities: Record<string, string>; cars: Record<string, string>;
+  };
+
+  document.querySelectorAll<HTMLFormElement>('form[data-iq]').forEach((form) => {
+    const t: I18n = JSON.parse(form.dataset.i18n || '{}');
+    const sel = (n: string) => form.elements.namedItem(n) as HTMLSelectElement | HTMLInputElement;
+    const err = form.querySelector<HTMLElement>('.iq__err')!;
+
+    // Don't allow picking a date in the past
+    const date = sel('date') as HTMLInputElement;
+    const d = new Date();
+    date.min = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+
+    form.addEventListener('change', () => { err.textContent = ''; });
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const from = sel('from').value;
+      const to = sel('to').value;
+      const car = sel('car').value;
+      const dateV = date.value;
+      const name = sel('name').value.trim();
+
+      if (!from || !to || !car) {
+        err.textContent = t.errReq;
+        (!from ? sel('from') : !to ? sel('to') : sel('car')).focus();
+        return;
+      }
+      if (from === to && from !== 'other') {
+        err.textContent = t.errSame;
+        sel('to').focus();
+        return;
+      }
+
+      const when = dateV ? t.msgDate.replace('{date}', dateV) : t.msgEarliest;
+      let text = t.msg
+        .replace('{car}', t.cars[car] || car)
+        .replace('{from}', t.cities[from] || from)
+        .replace('{to}', t.cities[to] || to)
+        .replace('{when}', when)
+        .trim();
+      if (name) text += `\n${t.msgName}: ${name}`;
+      const url = `https://wa.me/${form.dataset.wa}?text=${encodeURIComponent(text)}`;
+
+      // Push the conversion (with the route) before WhatsApp opens.
+      (window as any).sathaTrack?.('form', form.dataset.where || 'intercity-quote', { from_city: from, to_city: to, car_type: car });
+
+      // window.open returns null when 'noopener' is passed, so clear opener manually.
+      const win = window.open(url, '_blank');
+      if (win) win.opener = null;
+      // Same-tab fallback (popup blocked): wait 300 ms so the tags can fire before the page unloads.
+      else setTimeout(() => { window.location.href = url; }, 300);
+    });
+  });
+
+  // "Get a price" links on route cards: pre-select the route in the form, then scroll to it.
+  document.addEventListener('click', (e) => {
+    const a = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[data-iq-from]');
+    if (!a) return;
+    const form = document.querySelector<HTMLFormElement>(a.getAttribute('href') || '#intercity-quote');
+    if (!form) return;
+    const set = (n: string, v?: string) => { const s = form.elements.namedItem(n) as HTMLSelectElement | null; if (s && v) s.value = v; };
+    set('from', a.dataset.iqFrom);
+    set('to', a.dataset.iqTo);
+    setTimeout(() => (form.elements.namedItem('car') as HTMLSelectElement | null)?.focus({ preventScroll: true }), 400);
+  });
+</script>

@@ -68,18 +68,14 @@ function card(section: Section, p: LandingPage, lang: Lang) {
   return { href: localePath(lang, `/${section}/${p.slug}/`), title: p[lang].name, desc: p[lang].short, icon: p.icon };
 }
 
-export function getLandingProps(section: Section, page: LandingPage, lang: Lang) {
-  const image = section === 'services' ? SERVICE_IMAGE[page.slug] : section === 'routes' ? heroEn : riyadhImg;
+/** Props for service and area pages. Route pages use RouteTemplate.astro. */
+export function getLandingProps(section: Exclude<Section, 'routes'>, page: LandingPage, lang: Lang) {
+  const image = section === 'services' ? SERVICE_IMAGE[page.slug] : riyadhImg;
   let related;
   if (section === 'services') {
     related = [
       ...SERVICES.filter((s) => s.slug !== page.slug).slice(0, 5).map((s) => card('services', s, lang)),
       card('routes', ROUTES[0], lang),
-    ];
-  } else if (section === 'routes') {
-    related = [
-      ...ROUTES.filter((r) => r.slug !== page.slug).map((r) => card('routes', r, lang)),
-      card('services', SERVICES.find((s) => s.slug === 'city-to-city-car-transport')!, lang),
     ];
   } else {
     related = [
@@ -96,7 +92,7 @@ export function getLandingProps(section: Section, page: LandingPage, lang: Lang)
     image,
     imageAlt: altFor(image, lang),
     related,
-    preset: section === 'routes' ? 'city' : PRESET[page.slug] ?? 'breakdown',
+    preset: PRESET[page.slug] ?? 'breakdown',
     serviceType: SERVICE_TYPE[section],
   };
 }

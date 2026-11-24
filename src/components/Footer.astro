@@ -44,7 +44,7 @@ const coverageHrefs = [L('/areas/'), L('/routes/riyadh-to-jeddah/'), L('/routes/
       </div>
     </div>
     <div class="footer__bottom">
-      <p>© {SITE.year} {SITE.name[lang]}. {t.footer.rights}</p>
+      <p>© {SITE.year} {SITE.name[lang]}. {t.footer.rights}{SITE.crNumber && <> · {lang === 'ar' ? 'السجل التجاري' : 'CR no.'} <span class="ltr-num">{SITE.crNumber}</span></>}</p>
       <div class="footer__links">
         <a href={L('/prices/')}>{t.footer.prices}</a>
         <a href={L('/privacy/')}>{t.footer.privacy}</a>

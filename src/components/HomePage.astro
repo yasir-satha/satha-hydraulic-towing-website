@@ -226,6 +226,7 @@ const faqSchema = {
         <div class="routes__head">
           <h3 class="routes__title">{t.coverage.routesTitle}</h3>
           <span class="routes__d2d"><Icon name="truck" size={16} />{t.coverage.doorToDoor}</span>
+          <a class="routes__all" href={L('/routes/')}>{lang === 'ar' ? 'جميع المسارات بين المدن' : 'All intercity routes'}<Icon name={lang === 'ar' ? 'arrow-left' : 'arrow-right'} size={16} /></a>
         </div>
         <div class="routes__grid">
           {ROUTE_TILES.map((r) => (

@@ -1,10 +1,10 @@
 ---
-import LandingTemplate from '../../components/LandingTemplate.astro';
-import { COLLECTIONS, getLandingProps } from '../../lib/landing';
+import RouteTemplate from '../../components/RouteTemplate.astro';
+import { ROUTES } from '../../data/routes';
 
 export function getStaticPaths() {
-  return COLLECTIONS.routes.map((page) => ({ params: { slug: page.slug }, props: { page } }));
+  return ROUTES.map((page) => ({ params: { slug: page.slug }, props: { page } }));
 }
 const { page } = Astro.props;
 ---
-<LandingTemplate {...getLandingProps('routes', page, 'en')} />
+<RouteTemplate lang="en" page={page} />

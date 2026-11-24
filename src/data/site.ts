@@ -1,7 +1,7 @@
 export type Lang = 'en' | 'ar';
 
 /**
- * Phone number comes from PUBLIC_PHONE_NUMBER (any format, e.g. 0569470469 or +966569470469).
+ * Phone number comes from PUBLIC_PHONE_NUMBER (any format, e.g. 0531521277 or +966531521277).
  * WhatsApp uses PUBLIC_WHATSAPP_NUMBER if set, otherwise the same number.
  * Values are read at build time, so redeploy after changing them.
  */
@@ -12,10 +12,10 @@ function toIntl(raw: string): string {
   if (!d.startsWith('966') && d.length === 9) d = `966${d}`;
   return d;
 }
-const phoneIntl = toIntl(import.meta.env.PUBLIC_PHONE_NUMBER || '0569470469');
+const phoneIntl = toIntl(import.meta.env.PUBLIC_PHONE_NUMBER || '0531521277');
 const waIntl = toIntl(import.meta.env.PUBLIC_WHATSAPP_NUMBER || phoneIntl);
-const national = phoneIntl.startsWith('966') ? phoneIntl.slice(3) : phoneIntl; // 569470469
-const local = `0${national}`; // 0569470469
+const national = phoneIntl.startsWith('966') ? phoneIntl.slice(3) : phoneIntl; // 531521277
+const local = `0${national}`; // 0531521277
 const group = (x: string) => (x.length === 10 ? `${x.slice(0, 3)} ${x.slice(3, 6)} ${x.slice(6)}` : x);
 const groupIntl = (x: string) => (x.length === 9 ? `${x.slice(0, 2)} ${x.slice(2, 5)} ${x.slice(5)}` : x);
 
@@ -29,6 +29,8 @@ export const SITE = {
   city: { en: 'Riyadh', ar: 'الرياض' },
   country: { en: 'Saudi Arabia', ar: 'المملكة العربية السعودية' },
   year: 2026,
+  /** Commercial registration (السجل التجاري) number, shown in the footer and on the routes hub when set */
+  crNumber: (import.meta.env.PUBLIC_CR_NUMBER || '') as string,
 } as const;
 
 export const TEL_HREF = `tel:${SITE.phoneE164}`;

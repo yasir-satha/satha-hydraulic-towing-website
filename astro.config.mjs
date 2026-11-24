@@ -38,7 +38,7 @@ export default defineConfig({
       lastmod: new Date(),
       i18n: {
         defaultLocale: 'en',
-        locales: { en: 'en-SA', ar: 'ar-SA' },
+        locales: { en: 'en', ar: 'ar-SA' },
       },
     }),
   ],

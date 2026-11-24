@@ -22,7 +22,10 @@ Requires Node 22.23+ (Node 24 recommended).
 | Phone / WhatsApp number | `PUBLIC_PHONE_NUMBER` env var (`src/data/site.ts`) |
 | Home page copy (EN + AR) | `src/data/ui.ts` |
 | Service pages | `src/data/services.ts` |
-| City route pages | `src/data/routes.ts` |
+| City route pages | `src/data/routes.ts` (route copy) |
+| Intercity road distances | `PRICE_ROWS` at the top of `src/data/routes.ts` |
+| Routes hub copy, quote-form text | `src/data/routes-hub.ts` |
+| Commercial registration number | `PUBLIC_CR_NUMBER` env var |
 | Riyadh district pages | `src/data/areas.ts` |
 | Prices / privacy / terms | `src/data/pages.ts` |
 | Google Tag Manager | `src/layouts/Base.astro` (ID via `PUBLIC_GTM_ID`) |

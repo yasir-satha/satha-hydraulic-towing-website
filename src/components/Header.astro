@@ -13,13 +13,13 @@ const altHref = localePath(alt, path);
 const links = [
   { href: `${home}#services`, label: t.nav.services },
   { href: `${home}#how-it-works`, label: t.nav.how },
+  { href: localePath(lang, '/routes/'), label: t.nav.routes },
   { href: `${home}#coverage`, label: t.nav.coverage },
   { href: `${home}#faq`, label: t.nav.faq },
 ];
 const mobileExtra = [
   { href: localePath(lang, '/prices/'), label: t.nav.prices },
   { href: localePath(lang, '/areas/'), label: t.nav.areas },
-  { href: localePath(lang, '/routes/'), label: t.nav.routes },
 ];
 ---
 <div class="topbar">

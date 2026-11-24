@@ -1,14 +1,23 @@
 ---
 import Icon from './Icon.astro';
 import QuoteCard from './QuoteCard.astro';
+import IntercityQuote from './IntercityQuote.astro';
 import { SITE, TEL_HREF, waHref, type Lang } from '../data/site';
 import { UI } from '../data/ui';
-interface Props { lang: Lang; preset?: string; wa?: string }
-const { lang, preset, wa } = Astro.props;
+interface Props {
+  lang: Lang;
+  preset?: string;
+  wa?: string;
+  /** Which form sits next to the call buttons: the general quote card, the intercity form, or none */
+  form?: 'quote' | 'intercity' | 'none';
+  from?: string;
+  to?: string;
+}
+const { lang, preset, wa, form = 'quote', from, to } = Astro.props;
 const t = UI[lang].cta;
 ---
 <section class="final" aria-labelledby="final-title">
-  <div class="container final__in">
+  <div class:list={['container final__in', { 'final__in--solo': form === 'none' }]}>
     <div class="final__content">
       <p class="final__badge"><span class="dot dot--pulse"></span>{t.badge}</p>
       <h2 class="final__title" id="final-title"><span>{t.title[0]}</span><span>{t.title[1]}</span></h2>
@@ -20,6 +29,7 @@ const t = UI[lang].cta;
         <a class="btn btn--wa btn--lg" href={waHref(wa ?? UI[lang].waDefault)} target="_blank" rel="noopener" data-track="final"><Icon name="whatsapp-logo" size={20} />{t.wa}</a>
       </div>
     </div>
-    <QuoteCard lang={lang} preset={preset} />
+    {form === 'quote' && <QuoteCard lang={lang} preset={preset} />}
+    {form === 'intercity' && <IntercityQuote lang={lang} from={from} to={to} />}
   </div>
 </section>

@@ -1,0 +1,217 @@
+---
+import { Image } from 'astro:assets';
+import Base from '../layouts/Base.astro';
+import Icon from './Icon.astro';
+import FaqList from './FaqList.astro';
+import FinalCta from './FinalCta.astro';
+import heroImg from '../assets/img/hero-flatbed-riyadh-night.jpg';
+import { SITE, TEL_HREF, waHref, localePath, type Lang } from '../data/site';
+import { UI } from '../data/ui';
+import { CITIES, cityName } from '../data/cities';
+import { ROUTES, PRICE_ROWS, routeBySlug } from '../data/routes';
+import { HUB } from '../data/routes-hub';
+import { SECTION_LABEL } from '../lib/landing';
+import type { RoutePage } from '../data/types';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const t = UI[lang];
+const h = HUB[lang];
+const path = '/routes/';
+const site = Astro.site!;
+const abs = (p: string) => new URL(localePath(lang, p), site).href;
+const isAr = lang === 'ar';
+const routeHref = (r: RoutePage) => localePath(lang, `/routes/${r.slug}/`);
+const waMsg = isAr ? 'السلام عليكم، أريد عرض سعر لنقل سيارتي بين المدن.' : 'Hello Satha, I would like a quote to move my car between cities.';
+
+// City grid: link each city to its route page where one exists.
+function cityRoute(slug: string): RoutePage | undefined {
+  if (slug === 'riyadh') return undefined;
+  return routeBySlug(`riyadh-to-${slug}`) ?? routeBySlug(`${slug}-to-riyadh`) ?? ROUTES.find((r) => r.from === slug || r.to === slug);
+}
+
+// Route cards: every route page, grouped by city pair (both directions together), in price-table order.
+const pairKey = (a: string, b: string) => [a, b].sort().join('|');
+const order = PRICE_ROWS.map((p) => pairKey(p.a, p.b));
+const cards = [...ROUTES].sort((x, y) => order.indexOf(pairKey(x.from, x.to)) - order.indexOf(pairKey(y.from, y.to)));
+
+const pairName = (a: string, b: string) => `${cityName(a, lang)} – ${cityName(b, lang)}`;
+
+const schema = [
+  {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: t.breadcrumbHome, item: abs('/') },
+      { '@type': 'ListItem', position: 2, name: SECTION_LABEL.routes[lang], item: abs(path) },
+    ],
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'Service',
+    name: isAr ? 'نقل سيارات بين المدن' : 'Intercity car transport',
+    serviceType: isAr ? 'نقل سيارات بين المدن' : 'Intercity car transport',
+    description: h.description,
+    url: abs(path),
+    inLanguage: isAr ? 'ar-SA' : 'en',
+    provider: { '@id': new URL('/#business', site).href },
+    areaServed: { '@type': 'Country', name: 'Saudi Arabia' },
+    availableChannel: {
+      '@type': 'ServiceChannel',
+      servicePhone: { '@type': 'ContactPoint', telephone: SITE.phoneE164 },
+    },
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    itemListElement: cards.map((r, i) => ({ '@type': 'ListItem', position: i + 1, name: r[lang].name, url: abs(`/routes/${r.slug}/`) })),
+  },
+  {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    inLanguage: isAr ? 'ar-SA' : 'en',
+    mainEntity: h.faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })),
+  },
+];
+---
+<Base lang={lang} path={path} title={h.title} description={h.description} schema={schema} wa={waMsg}>
+  <section class="page-hero">
+    <Image class="page-hero__img" src={heroImg} alt="" widths={[768, 1408]} sizes="100vw" format="webp" quality={60} loading="eager" fetchpriority="high" />
+    <div class="container">
+      <div class="page-hero__in">
+        <nav aria-label={isAr ? 'مسار التنقل' : 'Breadcrumb'}>
+          <ol class="crumbs">
+            <li><a href={localePath(lang, '/')}>{t.breadcrumbHome}</a></li>
+            <li><span aria-current="page">{SECTION_LABEL.routes[lang]}</span></li>
+          </ol>
+        </nav>
+        <h1>{h.h1}</h1>
+        <p class="page-hero__lead">{h.lead}</p>
+        <div class="btn-row">
+          <a class="btn btn--yellow" href={TEL_HREF} data-track="routes-hub"><Icon name="phone" size={20} />{t.how.call} <span class="ltr-num">{SITE.phoneDisplay}</span></a>
+          <a class="btn btn--wa" href={waHref(waMsg)} target="_blank" rel="noopener" data-track="routes-hub"><Icon name="whatsapp-logo" size={20} />{t.how.wa}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 1. Cities we cover -->
+  <section class="hub-sec" aria-labelledby="cities-title">
+    <div class="container">
+      <h2 class="section-title" id="cities-title">{h.citiesTitle}</h2>
+      <p class="hub-sec__desc">{h.citiesDesc}</p>
+      <ul class="city-grid">
+        {CITIES.map((c) => {
+          const r = cityRoute(c.slug);
+          return (
+            <li>
+              {r
+                ? <a class="city-grid__i city-grid__i--link" href={routeHref(r)}><Icon name="map-pin" size={16} />{c[lang]}</a>
+                : <span class="city-grid__i"><Icon name="map-pin" size={16} />{c[lang]}</span>}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </section>
+
+  <!-- 2. Most requested routes -->
+  <section class="hub-sec hub-sec--alt" aria-labelledby="routes-title" id="routes">
+    <div class="container">
+      <h2 class="section-title" id="routes-title">{h.routesTitle}</h2>
+      <p class="hub-sec__desc">{h.routesDesc}</p>
+      <div class="route-cards">
+        {cards.map((r) => (
+          <div class="route-card">
+            <a class="route-card__t" href={routeHref(r)}>{r[lang].name}</a>
+            <p class="route-card__meta">
+              <span><Icon name="path" size={16} />{r.km} {h.km}</span>
+            </p>
+            <div class="route-card__btns">
+              <a class="btn btn--yellow btn--sm" href="#intercity-quote" data-iq-from={r.from} data-iq-to={r.to}>{h.askPrice}</a>
+              <a class="route-card__more" href={routeHref(r)}>{h.details}</a>
+            </div>
+          </div>
+        ))}
+      </div>
+      <div class="hub-cta">
+        <p class="hub-cta__t">{h.ctaMid}</p>
+        <div class="btn-row">
+          <a class="btn btn--ink" href={TEL_HREF} data-track="routes-hub-mid"><Icon name="phone" size={20} />{h.callShort} <span class="ltr-num">{SITE.phoneDisplay}</span></a>
+          <a class="btn btn--wa" href={waHref(waMsg)} target="_blank" rel="noopener" data-track="routes-hub-mid"><Icon name="whatsapp-logo" size={20} />{t.how.wa}</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. How it works -->
+  <section class="hub-sec" aria-labelledby="steps-title">
+    <div class="container">
+      <h2 class="section-title" id="steps-title">{h.stepsTitle}</h2>
+      <ol class="hub-steps">
+        {h.steps.map((s, i) => (
+          <li class="hub-steps__i">
+            <span class="hub-steps__n">{i + 1}</span>
+            <h3 class="hub-steps__t">{s.t}</h3>
+            <p class="hub-steps__d">{s.d}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- 4. Prices and delivery times -->
+  <section class="hub-sec hub-sec--alt" aria-labelledby="prices-title">
+    <div class="container">
+      <h2 class="section-title" id="prices-title">{h.pricesTitle}</h2>
+      <p class="hub-sec__desc">{h.pricesDesc}</p>
+      <div class="price-table__wrap">
+        <table class="price-table">
+          <thead>
+            <tr>{h.pricesCols.map((col) => <th scope="col">{col}</th>)}</tr>
+          </thead>
+          <tbody>
+            {PRICE_ROWS.map((p) => (
+              <tr>
+                <th scope="row">{pairName(p.a, p.b)}</th>
+                <td><span class="ltr-num">{p.km}</span> {h.km}</td>
+                <td><a href="#intercity-quote" data-iq-from={p.a} data-iq-to={p.b}>{h.pricesAsk}</a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <p class="price-table__note">{h.pricesNote}</p>
+    </div>
+  </section>
+
+  <!-- 5. Why choose us -->
+  <section class="hub-sec" aria-labelledby="why-title">
+    <div class="container">
+      <h2 class="section-title" id="why-title">{h.whyTitle}</h2>
+      <div class="hub-why">
+        {h.why.map((w) => (
+          <div class="hub-why__i">
+            <span class="icon-box"><Icon name={w.icon} size={22} /></span>
+            <div>
+              <h3 class="hub-why__t">{w.t}</h3>
+              <p class="hub-why__d">{w.d}</p>
+            </div>
+          </div>
+        ))}
+      </div>
+      {SITE.crNumber && <p class="hub-cr">{h.crLabel}: <span class="ltr-num">{SITE.crNumber}</span></p>}
+    </div>
+  </section>
+
+  <!-- 6. FAQ -->
+  <section class="page-faq" aria-labelledby="page-faq-title">
+    <div class="container">
+      <h2 class="section-title" id="page-faq-title">{h.faqTitle}</h2>
+      <FaqList items={h.faqs} />
+    </div>
+  </section>
+
+  <!-- 7. Call / WhatsApp at the end + intercity quote form -->
+  <FinalCta lang={lang} wa={waMsg} form="intercity" />
+</Base>
